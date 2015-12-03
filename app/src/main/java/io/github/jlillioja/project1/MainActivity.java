@@ -1,5 +1,6 @@
 package io.github.jlillioja.project1;
 
+import android.content.Context;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -7,34 +8,38 @@ import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.GridView;
+import android.widget.SimpleAdapter;
 import android.widget.Toast;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedInputStream;
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 
 public class MainActivity extends AppCompatActivity {
 
-    private JSONObject moviesJSON;
-    private ImageAdapter mAdapter;
+    protected JSONObject moviesJSON;
+    protected ImageAdapter mAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        GridView gridView = (GridView) findViewById(R.id.gridView);
+
 
         new populateMoviesTask().execute();
 
-        mAdapter = new ImageAdapter(this, moviesJSON);
-        gridView.setAdapter(mAdapter);
+        GridView gridView = (GridView) findViewById(R.id.gridView);
+
+
         gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -45,9 +50,12 @@ public class MainActivity extends AppCompatActivity {
 
     private class populateMoviesTask extends AsyncTask<Void, Void, JSONObject> {
 
+
         private final String LOG_TAG = populateMoviesTask.class.getSimpleName();
 
-        protected JSONObject doInBackground(Void... params) {
+        protected JSONObject doInBackground(Void... n) {
+
+
 
             HttpURLConnection urlConnection = null;
 
@@ -56,7 +64,18 @@ public class MainActivity extends AppCompatActivity {
 
                 urlConnection = (HttpURLConnection) url.openConnection();
                 InputStream in = new BufferedInputStream(urlConnection.getInputStream());
-                return new JSONObject(in.toString());
+
+                StringBuilder inStringBuilder = new StringBuilder();
+                String line;
+
+                BufferedReader reader = new BufferedReader(new InputStreamReader(in));
+                while (((line = reader.readLine()) != null)) {
+                    inStringBuilder.append(line);
+                }
+
+                String inString = inStringBuilder.toString();
+                Log.v(LOG_TAG, inString);
+                return new JSONObject(inString);
             } catch (MalformedURLException err) {
                 Log.e(LOG_TAG, "MalformedURLException", err);
                 return null;
@@ -73,6 +92,11 @@ public class MainActivity extends AppCompatActivity {
 
         protected void onPostExecute(JSONObject result) {
             if (result != null) {
+                Log.d(LOG_TAG, "entered nontrivial onPostExecute");
+                moviesJSON = result;
+                GridView gridView = (GridView) findViewById(R.id.gridView);
+                mAdapter = new ImageAdapter(getApplicationContext(), moviesJSON);
+                gridView.setAdapter(mAdapter);
 
             }
         }

@@ -26,6 +26,7 @@ public class ImageAdapter extends BaseAdapter {
     private final String LOG_TAG = ImageAdapter.class.getSimpleName();
 
     public ImageAdapter(Context c, JSONObject movies) {
+        super();
         mContext = c;
         moviesJSON = movies;
     }
@@ -34,6 +35,7 @@ public class ImageAdapter extends BaseAdapter {
 
 
     public int getCount() {
+        if (moviesJSON == null) return 0;
         try {
             return moviesJSON.getJSONArray("results").length();
         } catch (JSONException err) {
@@ -42,6 +44,7 @@ public class ImageAdapter extends BaseAdapter {
     }
 
     public JSONObject getItem(int position) {
+        if (moviesJSON == null) return null;
         try {
             return (JSONObject) moviesJSON.getJSONArray("results").get(position);
         } catch (JSONException err) {
@@ -50,11 +53,15 @@ public class ImageAdapter extends BaseAdapter {
     }
 
     public long getItemId(int position) {
+
         return 0;
     }
 
     // create a new ImageView for each item referenced by the Adapter
+    @Override
     public View getView(int position, View convertView, ViewGroup parent) {
+
+        Log.d(LOG_TAG, "entered getView");
 
         if (moviesJSON == null) {
             Toast.makeText(mContext, "Movies not yet loaded.", Toast.LENGTH_LONG).show();
@@ -67,19 +74,22 @@ public class ImageAdapter extends BaseAdapter {
             imageView = new ImageView(mContext);
             imageView.setLayoutParams(new GridView.LayoutParams(85, 85));
             imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
-            imageView.setPadding(8, 8, 8, 8);
+            imageView.setPadding(0, 0,0, 0);
         } else {
             imageView = (ImageView) convertView;
         }
 
         try {
             String imagePath = moviesJSON.getJSONArray("results").getJSONObject(position).getString("poster_path");
+            Log.d(LOG_TAG, "imagePath = "+imagePath);
             Uri imageURL = Uri.parse("http://image.tmdb.org/t/p/").buildUpon()
                     .appendPath(mContext.getString(R.string.imageSize))
-                    .appendPath(imagePath)
+                    .appendEncodedPath(imagePath)
                     .build();
 
             Picasso.with(mContext).load(imageURL).into(imageView);
+
+            Log.d(LOG_TAG, "returning imageView for image "+imageURL.toString());
 
             return imageView;
         } catch (JSONException err) {
