@@ -95,7 +95,7 @@ public class MainActivity extends AppCompatActivity {
                 Log.d(LOG_TAG, "entered nontrivial onPostExecute");
                 moviesJSON = result;
                 GridView gridView = (GridView) findViewById(R.id.gridView);
-                mAdapter = new ImageAdapter(getApplicationContext(), moviesJSON);
+                mAdapter = new ImageAdapter(getApplicationContext(), R.layout.grid_item, moviesJSON);
                 gridView.setAdapter(mAdapter);
 
             }

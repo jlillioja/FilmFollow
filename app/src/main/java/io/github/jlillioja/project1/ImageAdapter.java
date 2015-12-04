@@ -1,8 +1,10 @@
 package io.github.jlillioja.project1;
 
+import android.app.Activity;
 import android.content.Context;
 import android.net.Uri;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
@@ -20,19 +22,18 @@ import org.json.JSONObject;
  */
 public class ImageAdapter extends BaseAdapter {
 
-    private Context mContext;
+    private Context context;
     private JSONObject moviesJSON = null;
+    int layoutResourceID;
 
     private final String LOG_TAG = ImageAdapter.class.getSimpleName();
 
-    public ImageAdapter(Context c, JSONObject movies) {
+    public ImageAdapter(Context context, int layoutResourceID, JSONObject moviesJSON) {
         super();
-        mContext = c;
-        moviesJSON = movies;
+        this.context = context;
+        this.moviesJSON = moviesJSON;
+        this.layoutResourceID = layoutResourceID;
     }
-
-
-
 
     public int getCount() {
         if (moviesJSON == null) return 0;
@@ -64,34 +65,39 @@ public class ImageAdapter extends BaseAdapter {
         Log.d(LOG_TAG, "entered getView");
 
         if (moviesJSON == null) {
-            Toast.makeText(mContext, "Movies not yet loaded.", Toast.LENGTH_LONG).show();
+            Toast.makeText(context, "Movies not yet loaded.", Toast.LENGTH_LONG).show();
             return null;
         }
 
-        ImageView imageView;
+        View itemView;
         if (convertView == null) {
             // if it's not recycled, initialize some attributes
-            imageView = new ImageView(mContext);
+            /*
+            imageView = new ImageView(context);
             imageView.setLayoutParams(new GridView.LayoutParams(85, 85));
             imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
             imageView.setPadding(0, 0,0, 0);
+            */
+
+            LayoutInflater inflater = LayoutInflater.from(context);
+            itemView = inflater.inflate(layoutResourceID, parent, false);
         } else {
-            imageView = (ImageView) convertView;
+            itemView = convertView;
         }
 
         try {
             String imagePath = moviesJSON.getJSONArray("results").getJSONObject(position).getString("poster_path");
-            Log.d(LOG_TAG, "imagePath = "+imagePath);
+            Log.d(LOG_TAG, "imagePath = " + imagePath);
             Uri imageURL = Uri.parse("http://image.tmdb.org/t/p/").buildUpon()
-                    .appendPath(mContext.getString(R.string.imageSize))
+                    .appendPath(context.getString(R.string.imageSize))
                     .appendEncodedPath(imagePath)
                     .build();
 
-            Picasso.with(mContext).load(imageURL).into(imageView);
+            Picasso.with(context).load(imageURL).into((ImageView) itemView.findViewById(R.id.grid_image));
 
             Log.d(LOG_TAG, "returning imageView for image "+imageURL.toString());
 
-            return imageView;
+            return itemView;
         } catch (JSONException err) {
             Log.e(LOG_TAG, "Couldn't parse moviesJSON", err);
             return null;
