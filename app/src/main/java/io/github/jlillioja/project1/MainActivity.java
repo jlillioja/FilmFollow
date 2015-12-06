@@ -30,14 +30,14 @@ public class MainActivity extends AppCompatActivity {
 
     protected JSONObject moviesJSON;
     protected ImageAdapter mAdapter;
-    protected String sort;
+    SharedPreferences settings;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        SharedPreferences settings = getPreferences(MODE_PRIVATE);
-        sort = settings.getString("sort", "popularity.desc");
+        settings = getPreferences(MODE_PRIVATE);
+        settings.getString("sort", "popularity.desc");
 
 
 
@@ -78,13 +78,13 @@ public class MainActivity extends AppCompatActivity {
         }
 
         if (id == R.id.popularity_sort) {
-            sort = "popularity.desc";
+            settings.edit().putString("sort", "popularity.desc").commit();
             new populateMoviesTask().execute();
             return true;
         }
 
         if (id == R.id.rating_sort) {
-            sort = "vote_average.desc";
+            settings.edit().putString("sort", "vote_average.desc").commit();
             new populateMoviesTask().execute();
             return true;
         }
@@ -108,7 +108,7 @@ public class MainActivity extends AppCompatActivity {
 
                 URL url = new URL(Uri.parse("http://api.themoviedb.org/3/discover/movie").buildUpon()
                         .appendQueryParameter("api_key", getApplicationContext().getString(R.string.api_key))
-                        .appendQueryParameter("sort_by", sort)
+                        .appendQueryParameter("sort_by", settings.getString("sort", "popularity.desc"))
                         .build().toString());
 
                 urlConnection = (HttpURLConnection) url.openConnection();
