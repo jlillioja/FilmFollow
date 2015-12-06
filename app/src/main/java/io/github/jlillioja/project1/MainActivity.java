@@ -1,5 +1,6 @@
 package io.github.jlillioja.project1;
 
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -35,6 +36,8 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        SharedPreferences settings = getPreferences(MODE_PRIVATE);
+        sort = settings.getString("sort", "popularity.desc");
 
 
 
@@ -46,12 +49,19 @@ public class MainActivity extends AppCompatActivity {
         gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Toast.makeText(getApplicationContext(), "Not just yet.", Toast.LENGTH_LONG).show();
+                //Toast.makeText(getApplicationContext(), "Not just yet.", Toast.LENGTH_LONG).show();
+                Intent intent = new Intent(getApplicationContext(), MovieDetailsActivity.class);
+                try {
+                    intent.putExtra(getString(R.string.movie_key), moviesJSON.getJSONArray("results").getJSONObject(position).toString());
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+
+                startActivity(intent);
             }
         });
 
-        SharedPreferences settings = getPreferences(MODE_PRIVATE);
-        sort = settings.getString("sort", "popularity.desc");
+
     }
 
     public boolean onCreateOptionsMenu (Menu menu) {

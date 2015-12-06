@@ -86,24 +86,32 @@ public class ImageAdapter extends BaseAdapter {
 
         try {
             JSONObject movie = moviesJSON.getJSONArray("results").getJSONObject(position);
-            String imagePath = movie.getString("poster_path");
-            Log.d(LOG_TAG, "imagePath = " + imagePath);
-            Uri imageURL = Uri.parse("http://image.tmdb.org/t/p/").buildUpon()
-                    .appendPath(context.getString(R.string.imageSize))
-                    .appendEncodedPath(imagePath)
-                    .build();
-
-            Picasso.with(context).load(imageURL).into((ImageView) itemView.findViewById(R.id.grid_image));
+            loadImage((ImageView) itemView.findViewById(R.id.grid_image), movie, context);
 
             TextView title = (TextView) itemView.findViewById(R.id.grid_item_title);
             title.setText(movie.getString("original_title"));
 
-            Log.d(LOG_TAG, "returning imageView for image " + imageURL.toString());
+
 
             return itemView;
         } catch (JSONException err) {
             Log.e(LOG_TAG, "Couldn't parse moviesJSON", err);
             return null;
         }
+    }
+
+    public static Uri loadImage(ImageView imageView, JSONObject movie, Context context) throws JSONException {
+        String LOG_TAG = "loadImage";
+        String imagePath = movie.getString("poster_path");
+        Log.d(LOG_TAG, "imagePath = " + imagePath);
+        Uri imageURL = Uri.parse(context.getString(R.string.tmdb_image_path)).buildUpon()
+                .appendPath(context.getString(R.string.imageSize))
+                .appendEncodedPath(imagePath)
+                .build();
+
+        Log.d(LOG_TAG, "loading image " + imageURL.toString());
+
+        Picasso.with(context).load(imageURL).into(imageView);
+        return imageURL;
     }
 }
