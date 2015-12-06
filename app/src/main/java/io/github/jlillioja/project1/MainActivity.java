@@ -1,14 +1,14 @@
 package io.github.jlillioja.project1;
 
-import android.content.Context;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.GridView;
-import android.widget.SimpleAdapter;
 import android.widget.Toast;
 
 import org.json.JSONException;
@@ -46,6 +46,22 @@ public class MainActivity extends AppCompatActivity {
                 Toast.makeText(getApplicationContext(), "Not just yet.", Toast.LENGTH_LONG).show();
             }
         });
+    }
+
+    public boolean onCreateOptionsMenu (Menu menu) {
+        getMenuInflater().inflate(R.menu.main, menu);
+        return true;
+    }
+
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+
+        if (id == R.id.refresh) {
+            new populateMoviesTask().execute();
+            return true;
+        }
+
+        return super.onOptionsItemSelected(item);
     }
 
     private class populateMoviesTask extends AsyncTask<Void, Void, JSONObject> {
