@@ -1,5 +1,7 @@
 package io.github.jlillioja.project1;
 
+import android.content.SharedPreferences;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -27,6 +29,7 @@ public class MainActivity extends AppCompatActivity {
 
     protected JSONObject moviesJSON;
     protected ImageAdapter mAdapter;
+    protected String sort;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,6 +49,9 @@ public class MainActivity extends AppCompatActivity {
                 Toast.makeText(getApplicationContext(), "Not just yet.", Toast.LENGTH_LONG).show();
             }
         });
+
+        SharedPreferences settings = getPreferences(MODE_PRIVATE);
+        sort = settings.getString("sort", "popularity.desc");
     }
 
     public boolean onCreateOptionsMenu (Menu menu) {
@@ -57,6 +63,18 @@ public class MainActivity extends AppCompatActivity {
         int id = item.getItemId();
 
         if (id == R.id.refresh) {
+            new populateMoviesTask().execute();
+            return true;
+        }
+
+        if (id == R.id.popularity_sort) {
+            sort = "popularity.desc";
+            new populateMoviesTask().execute();
+            return true;
+        }
+
+        if (id == R.id.rating_sort) {
+            sort = "vote_average.desc";
             new populateMoviesTask().execute();
             return true;
         }
@@ -76,7 +94,12 @@ public class MainActivity extends AppCompatActivity {
             HttpURLConnection urlConnection = null;
 
             try {
-                URL url = new URL("http://api.themoviedb.org/3/discover/movie?api_key=" + getApplicationContext().getString(R.string.api_key)); //TODO - softcode
+                //URL url = new URL("http://api.themoviedb.org/3/discover/movie?api_key=" + getApplicationContext().getString(R.string.api_key)); //TODO - softcode
+
+                URL url = new URL(Uri.parse("http://api.themoviedb.org/3/discover/movie").buildUpon()
+                        .appendQueryParameter("api_key", getApplicationContext().getString(R.string.api_key))
+                        .appendQueryParameter("sort_by", sort)
+                        .build().toString());
 
                 urlConnection = (HttpURLConnection) url.openConnection();
                 InputStream in = new BufferedInputStream(urlConnection.getInputStream());

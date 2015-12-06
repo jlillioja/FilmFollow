@@ -8,4 +8,16 @@
         app:showAsAction="ifRoom"
         />
 
+    <item
+        android:id="@+id/popularity_sort"
+        android:title="Sort by Popularity"
+        app:showAsAction="never"
+        />
+
+    <item
+        android:id="@+id/rating_sort"
+        android:title="Sort by Rating"
+        app:showAsAction="never"
+        />
+
 </menu>

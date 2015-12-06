@@ -1,6 +1,5 @@
 package io.github.jlillioja.project1;
 
-import android.app.Activity;
 import android.content.Context;
 import android.net.Uri;
 import android.util.Log;
@@ -8,8 +7,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
-import android.widget.GridView;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.squareup.picasso.Picasso;
@@ -86,7 +85,8 @@ public class ImageAdapter extends BaseAdapter {
         }
 
         try {
-            String imagePath = moviesJSON.getJSONArray("results").getJSONObject(position).getString("poster_path");
+            JSONObject movie = moviesJSON.getJSONArray("results").getJSONObject(position);
+            String imagePath = movie.getString("poster_path");
             Log.d(LOG_TAG, "imagePath = " + imagePath);
             Uri imageURL = Uri.parse("http://image.tmdb.org/t/p/").buildUpon()
                     .appendPath(context.getString(R.string.imageSize))
@@ -95,7 +95,10 @@ public class ImageAdapter extends BaseAdapter {
 
             Picasso.with(context).load(imageURL).into((ImageView) itemView.findViewById(R.id.grid_image));
 
-            Log.d(LOG_TAG, "returning imageView for image "+imageURL.toString());
+            TextView title = (TextView) itemView.findViewById(R.id.grid_item_title);
+            title.setText(movie.getString("original_title"));
+
+            Log.d(LOG_TAG, "returning imageView for image " + imageURL.toString());
 
             return itemView;
         } catch (JSONException err) {
