@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="tmdb_image_path">http://image.tmdb.org/t/p/</string>
+    <string name="tmdb_discover_path">http://api.themoviedb.org/3/discover/movie</string>
+    <string name="api_key_query">api_key</string>
+    <string name="sort_query">sort_by</string>
+    <string name="results_key">results</string>
+    <string name="title_key">original_title</string>
+    <string name="poster_key">poster_path</string>
+</resources>

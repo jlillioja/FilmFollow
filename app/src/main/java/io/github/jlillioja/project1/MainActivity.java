@@ -12,7 +12,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.GridView;
-import android.widget.Toast;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -37,31 +36,23 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         settings = getPreferences(MODE_PRIVATE);
-        settings.getString("sort", "popularity.desc");
-
-
-
-        new populateMoviesTask().execute();
 
         GridView gridView = (GridView) findViewById(R.id.gridView);
-
-
         gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                //Toast.makeText(getApplicationContext(), "Not just yet.", Toast.LENGTH_LONG).show();
                 Intent intent = new Intent(getApplicationContext(), MovieDetailsActivity.class);
                 try {
+                    /*Convert movie whose click is registered to string in the intent. Could consider parcelable.*/
                     intent.putExtra(getString(R.string.movie_key), moviesJSON.getJSONArray("results").getJSONObject(position).toString());
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
-
                 startActivity(intent);
             }
         });
 
-
+        new populateMoviesTask().execute();
     }
 
     public boolean onCreateOptionsMenu (Menu menu) {
@@ -78,13 +69,13 @@ public class MainActivity extends AppCompatActivity {
         }
 
         if (id == R.id.popularity_sort) {
-            settings.edit().putString("sort", "popularity.desc").commit();
+            settings.edit().putString("sort", "popularity.desc").apply();
             new populateMoviesTask().execute();
             return true;
         }
 
         if (id == R.id.rating_sort) {
-            settings.edit().putString("sort", "vote_average.desc").commit();
+            settings.edit().putString("sort", "vote_average.desc").apply();
             new populateMoviesTask().execute();
             return true;
         }
@@ -94,21 +85,18 @@ public class MainActivity extends AppCompatActivity {
 
     private class populateMoviesTask extends AsyncTask<Void, Void, JSONObject> {
 
-
         private final String LOG_TAG = populateMoviesTask.class.getSimpleName();
 
         protected JSONObject doInBackground(Void... n) {
 
-
-
+            /* Declare urlConnection outside try/catch block so it can be closed in finally. */
             HttpURLConnection urlConnection = null;
 
             try {
-                //URL url = new URL("http://api.themoviedb.org/3/discover/movie?api_key=" + getApplicationContext().getString(R.string.api_key)); //TODO - softcode
 
-                URL url = new URL(Uri.parse("http://api.themoviedb.org/3/discover/movie").buildUpon()
-                        .appendQueryParameter("api_key", getApplicationContext().getString(R.string.api_key))
-                        .appendQueryParameter("sort_by", settings.getString("sort", "popularity.desc"))
+                URL url = new URL(Uri.parse(getString(R.string.tmdb_discover_path)).buildUpon()
+                        .appendQueryParameter(getString(R.string.api_key_query), getApplicationContext().getString(R.string.api_key))
+                        .appendQueryParameter(getString(R.string.sort_query), settings.getString("sort", "popularity.desc"))
                         .build().toString());
 
                 urlConnection = (HttpURLConnection) url.openConnection();
@@ -124,30 +112,33 @@ public class MainActivity extends AppCompatActivity {
 
                 String inString = inStringBuilder.toString();
                 Log.v(LOG_TAG, inString);
+
                 return new JSONObject(inString);
+
             } catch (MalformedURLException err) {
-                Log.e(LOG_TAG, "MalformedURLException", err);
+                err.printStackTrace();
                 return null;
             } catch (IOException err) {
-                Log.e(LOG_TAG, "IOException", err);
+                err.printStackTrace();
                 return null;
             } catch (JSONException err) {
-                Log.e(LOG_TAG, "JSONException", err);
+                err.printStackTrace();
                 return null;
             } finally {
                 urlConnection.disconnect();
             }
         }
 
+        /* Assign internal moviesJSON object and create and bind ImageAdapter to grid. */
         protected void onPostExecute(JSONObject result) {
             if (result != null) {
-                Log.d(LOG_TAG, "entered nontrivial onPostExecute");
                 moviesJSON = result;
                 GridView gridView = (GridView) findViewById(R.id.gridView);
                 mAdapter = new ImageAdapter(getApplicationContext(), R.layout.grid_item, moviesJSON);
                 gridView.setAdapter(mAdapter);
-
             }
         }
+
     }
+
 }

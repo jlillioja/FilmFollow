@@ -2,7 +2,6 @@ package io.github.jlillioja.project1;
 
 import android.content.Context;
 import android.net.Uri;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -53,31 +52,19 @@ public class ImageAdapter extends BaseAdapter {
     }
 
     public long getItemId(int position) {
-
         return 0;
     }
 
-    // create a new ImageView for each item referenced by the Adapter
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
 
-        Log.d(LOG_TAG, "entered getView");
-
         if (moviesJSON == null) {
-            Toast.makeText(context, "Movies not yet loaded.", Toast.LENGTH_LONG).show();
+            Toast.makeText(context, R.string.movies_not_loaded, Toast.LENGTH_LONG).show();
             return null;
         }
 
         View itemView;
         if (convertView == null) {
-            // if it's not recycled, initialize some attributes
-            /*
-            imageView = new ImageView(context);
-            imageView.setLayoutParams(new GridView.LayoutParams(85, 85));
-            imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
-            imageView.setPadding(0, 0,0, 0);
-            */
-
             LayoutInflater inflater = LayoutInflater.from(context);
             itemView = inflater.inflate(layoutResourceID, parent, false);
         } else {
@@ -85,32 +72,28 @@ public class ImageAdapter extends BaseAdapter {
         }
 
         try {
-            JSONObject movie = moviesJSON.getJSONArray("results").getJSONObject(position);
+            JSONObject movie = moviesJSON.getJSONArray(context.getString(R.string.results_key)).getJSONObject(position);
+
+            /* Load poster from movie into itemView's ImageView */
             loadImage((ImageView) itemView.findViewById(R.id.grid_image), movie, context);
 
-            TextView title = (TextView) itemView.findViewById(R.id.grid_item_title);
-            title.setText(movie.getString("original_title"));
-
-
+            /* Subtitle poster with movie name. */
+            ((TextView) itemView.findViewById(R.id.grid_item_title)).setText(movie.getString(context.getString(R.string.title_key)));
 
             return itemView;
         } catch (JSONException err) {
-            Log.e(LOG_TAG, "Couldn't parse moviesJSON", err);
+            err.printStackTrace();
             return null;
         }
     }
 
+    /* Static method to allow loading of image into an ImageView given a JSONObject movie. Used on details screen without the superclass. */
     public static Uri loadImage(ImageView imageView, JSONObject movie, Context context) throws JSONException {
-        String LOG_TAG = "loadImage";
-        String imagePath = movie.getString("poster_path");
-        Log.d(LOG_TAG, "imagePath = " + imagePath);
+        String imagePath = movie.getString(context.getString(R.string.poster_key));
         Uri imageURL = Uri.parse(context.getString(R.string.tmdb_image_path)).buildUpon()
                 .appendPath(context.getString(R.string.imageSize))
                 .appendEncodedPath(imagePath)
                 .build();
-
-        Log.d(LOG_TAG, "loading image " + imageURL.toString());
-
         Picasso.with(context).load(imageURL).into(imageView);
         return imageURL;
     }
