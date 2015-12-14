@@ -94,7 +94,11 @@ public class ImageAdapter extends BaseAdapter {
                 .appendPath(context.getString(R.string.imageSize))
                 .appendEncodedPath(imagePath)
                 .build();
-        Picasso.with(context).load(imageURL).into(imageView);
+
+        Picasso.with(context)
+                .load(imageURL)
+                .into(imageView);
+
         return imageURL;
     }
 }

@@ -18,7 +18,7 @@ public class MovieDetailsActivity extends AppCompatActivity {
 
         Intent intent = getIntent();
         try {
-            JSONObject movie = new JSONObject(intent.getStringExtra(getString(R.string.movie_key)));
+            JSONObject movie = new JSONObject(intent.getStringExtra(getString(R.string.key_movie)));
 
             ImageView image = (ImageView) findViewById(R.id.poster_imageView);
             ImageAdapter.loadImage(image, movie, this);

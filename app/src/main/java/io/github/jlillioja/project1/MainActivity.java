@@ -34,6 +34,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.activity_main);
         settings = getPreferences(MODE_PRIVATE);
 
@@ -44,7 +45,7 @@ public class MainActivity extends AppCompatActivity {
                 Intent intent = new Intent(getApplicationContext(), MovieDetailsActivity.class);
                 try {
                     /*Convert movie whose click is registered to string in the intent. Could consider parcelable.*/
-                    intent.putExtra(getString(R.string.movie_key), moviesJSON.getJSONArray("results").getJSONObject(position).toString());
+                    intent.putExtra(getString(R.string.key_movie), moviesJSON.getJSONArray("results").getJSONObject(position).toString());
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
@@ -52,7 +53,23 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        new populateMoviesTask().execute();
+        if (savedInstanceState != null) {
+            String savedMoviesJSON;
+            if ((savedMoviesJSON = savedInstanceState.getString(getString(R.string.key_movesJSON))) != null)
+            {
+                try {
+                    moviesJSON = new JSONObject(savedMoviesJSON);
+                    gridView.setAdapter(mAdapter = new ImageAdapter(this, R.layout.grid_item, moviesJSON));
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            } else new populateMoviesTask().execute();
+        } else new populateMoviesTask().execute();
+    }
+
+    public void onSaveInstanceState(Bundle savedInstanceState) {
+        if (moviesJSON != null) savedInstanceState.putString(getString(R.string.key_movesJSON), moviesJSON.toString());
+        super.onSaveInstanceState(savedInstanceState);
     }
 
     public boolean onCreateOptionsMenu (Menu menu) {
