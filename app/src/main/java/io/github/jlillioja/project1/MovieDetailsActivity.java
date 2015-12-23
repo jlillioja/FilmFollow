@@ -3,8 +3,11 @@ package io.github.jlillioja.project1;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.view.View;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -35,8 +38,15 @@ public class MovieDetailsActivity extends AppCompatActivity {
             TextView rating = (TextView) findViewById(R.id.rating_textView);
             rating.setText(getString(R.string.rating_title) + movie.getString("vote_average"));
 
+            Button trailer = (Button) findViewById(R.id.trailer_button);
+            trailer.setText(R.string.trailer_title);
+
         } catch (JSONException e) {
             e.printStackTrace();
         }
+    }
+
+    public void launchTrailer(View view) {
+        Toast.makeText(getApplicationContext(), getString(R.string.not_implemented), Toast.LENGTH_SHORT).show();
     }
 }

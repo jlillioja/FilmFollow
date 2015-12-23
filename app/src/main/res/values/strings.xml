@@ -15,4 +15,6 @@
     <string name="overview_title">"Overview: "</string>
     <string name="release_date_title">"Release Date: "</string>
     <string name="rating_title">"Rating: "</string>
+    <string name="trailer_title">Watch Trailer</string>
+    <string name="not_implemented">Feature not yet implemented.</string>
 </resources>
