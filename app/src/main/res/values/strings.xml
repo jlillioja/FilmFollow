@@ -4,7 +4,7 @@
     <string name="imageSize">w185</string>
     <string name="refresh">Refresh</string>
     <string name="title_activity_movie_details">MovieDetailsActivity</string>
-    <string name="movie_key">io.github.jlillioja.project1.movie</string>
+
 
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>

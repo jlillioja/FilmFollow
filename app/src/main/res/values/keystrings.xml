@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="key_movie">io.github.jlillioja.project1.movie</string>
+    <string name="key_movesJSON">io.github.jlillioja.project1.movies</string>
+</resources>
