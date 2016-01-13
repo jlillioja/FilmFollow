@@ -12,6 +12,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.GridView;
+import android.widget.Toast;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -95,6 +96,10 @@ public class MainActivity extends AppCompatActivity {
             settings.edit().putString("sort", "vote_average.desc").apply();
             new populateMoviesTask().execute();
             return true;
+        }
+
+        if (id == R.id.favorites_view) {
+            Toast.makeText(getApplicationContext(), getString(R.string.not_implemented), Toast.LENGTH_SHORT).show();
         }
 
         return super.onOptionsItemSelected(item);
