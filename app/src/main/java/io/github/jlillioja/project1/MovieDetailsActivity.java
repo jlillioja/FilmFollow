@@ -27,10 +27,10 @@ public class MovieDetailsActivity extends AppCompatActivity {
             ImageAdapter.loadImage(image, movie, this);
 
             TextView title = (TextView) findViewById(R.id.title_textView);
-            title.setText(getString(R.string.title_title) + movie.getString("original_title"));
+            title.setText(movie.getString("original_title"));
 
             TextView overview = (TextView) findViewById(R.id.overview_textView);
-            overview.setText(getString(R.string.overview_title) + movie.getString("overview"));
+            overview.setText(movie.getString("overview"));
 
             TextView release = (TextView) findViewById(R.id.release_textView);
             release.setText(getString(R.string.release_date_title) + movie.getString("release_date"));
@@ -39,7 +39,7 @@ public class MovieDetailsActivity extends AppCompatActivity {
             rating.setText(getString(R.string.rating_title) + movie.getString("vote_average"));
 
             Button trailer = (Button) findViewById(R.id.trailer_button);
-            trailer.setText(R.string.trailer_title);
+            //trailer.setText(R.string.trailer_title); //Changed to hardcoded button text in XML layout. Which is a better design pattern?
 
         } catch (JSONException e) {
             e.printStackTrace();
@@ -47,6 +47,14 @@ public class MovieDetailsActivity extends AppCompatActivity {
     }
 
     public void launchTrailer(View view) {
+        Toast.makeText(getApplicationContext(), getString(R.string.not_implemented), Toast.LENGTH_SHORT).show();
+    }
+
+    public void onToggleStar (View view) {
+        Toast.makeText(getApplicationContext(), getString(R.string.not_implemented), Toast.LENGTH_SHORT).show();
+    }
+
+    public void viewReviews (View view) {
         Toast.makeText(getApplicationContext(), getString(R.string.not_implemented), Toast.LENGTH_SHORT).show();
     }
 }
