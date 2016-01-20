@@ -17,4 +17,6 @@
     <string name="rating_title">"Rating: "</string>
     <string name="trailer_title">Watch Trailer</string>
     <string name="not_implemented">Feature not yet implemented.</string>
+    <string name="youtube_path">http://www.youtube.com</string>
+
 </resources>
