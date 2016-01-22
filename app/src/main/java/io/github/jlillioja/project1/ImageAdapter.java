@@ -20,17 +20,31 @@ import org.json.JSONObject;
  */
 public class ImageAdapter extends BaseAdapter {
 
+    private final String LOG_TAG = ImageAdapter.class.getSimpleName();
+    int layoutResourceID;
     private Context context;
     private JSONObject moviesJSON = null;
-    int layoutResourceID;
-
-    private final String LOG_TAG = ImageAdapter.class.getSimpleName();
 
     public ImageAdapter(Context context, int layoutResourceID, JSONObject moviesJSON) {
         super();
         this.context = context;
         this.moviesJSON = moviesJSON;
         this.layoutResourceID = layoutResourceID;
+    }
+
+    /* Static method to allow loading of image into an ImageView given a JSONObject movie. Used on details screen without the superclass. */
+    public static Uri loadImage(ImageView imageView, JSONObject movie, Context context) throws JSONException {
+        String imagePath = movie.getString(context.getString(R.string.poster_key));
+        Uri imageURL = Uri.parse(context.getString(R.string.tmdb_image_path)).buildUpon()
+                .appendPath(context.getString(R.string.imageSize))
+                .appendEncodedPath(imagePath)
+                .build();
+
+        Picasso.with(context)
+                .load(imageURL)
+                .into(imageView);
+
+        return imageURL;
     }
 
     public int getCount() {
@@ -72,7 +86,7 @@ public class ImageAdapter extends BaseAdapter {
         }
 
         try {
-            JSONObject movie = moviesJSON.getJSONArray(context.getString(R.string.results_key)).getJSONObject(position);
+            JSONObject movie = moviesJSON.getJSONArray(context.getString(R.string.key_results)).getJSONObject(position);
 
             /* Load poster from movie into itemView's ImageView */
             loadImage((ImageView) itemView.findViewById(R.id.grid_image), movie, context);
@@ -85,20 +99,5 @@ public class ImageAdapter extends BaseAdapter {
             err.printStackTrace();
             return null;
         }
-    }
-
-    /* Static method to allow loading of image into an ImageView given a JSONObject movie. Used on details screen without the superclass. */
-    public static Uri loadImage(ImageView imageView, JSONObject movie, Context context) throws JSONException {
-        String imagePath = movie.getString(context.getString(R.string.poster_key));
-        Uri imageURL = Uri.parse(context.getString(R.string.tmdb_image_path)).buildUpon()
-                .appendPath(context.getString(R.string.imageSize))
-                .appendEncodedPath(imagePath)
-                .build();
-
-        Picasso.with(context)
-                .load(imageURL)
-                .into(imageView);
-
-        return imageURL;
     }
 }

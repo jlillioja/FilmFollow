@@ -28,12 +28,15 @@ import java.net.URL;
 
 public class MainActivity extends AppCompatActivity {
 
+    private final static String LOG_TAG = "MainActivity";
+
     protected JSONObject moviesJSON;
     protected ImageAdapter mAdapter;
     SharedPreferences settings;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        Log.d(LOG_TAG, "Entered MainActivity");
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_main);
@@ -56,8 +59,7 @@ public class MainActivity extends AppCompatActivity {
 
         if (savedInstanceState != null) {
             String savedMoviesJSON;
-            if ((savedMoviesJSON = savedInstanceState.getString(getString(R.string.key_movesJSON))) != null)
-            {
+            if ((savedMoviesJSON = savedInstanceState.getString(getString(R.string.key_moviesJSON))) != null) {
                 try {
                     moviesJSON = new JSONObject(savedMoviesJSON);
                     gridView.setAdapter(mAdapter = new ImageAdapter(this, R.layout.grid_item, moviesJSON));
@@ -69,11 +71,12 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void onSaveInstanceState(Bundle savedInstanceState) {
-        if (moviesJSON != null) savedInstanceState.putString(getString(R.string.key_movesJSON), moviesJSON.toString());
+        if (moviesJSON != null)
+            savedInstanceState.putString(getString(R.string.key_moviesJSON), moviesJSON.toString());
         super.onSaveInstanceState(savedInstanceState);
     }
 
-    public boolean onCreateOptionsMenu (Menu menu) {
+    public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.main, menu);
         return true;
     }
