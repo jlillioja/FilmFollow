@@ -22,5 +22,6 @@
     <string name="title_activity_movie_reviews">MovieReviewsActivity</string>
 
     <string name="reviews_not_loaded">\"Reviews not yet loaded. Try refreshing.\"</string>
+    <string name="no_movie">No movie found. Returning to movie discovery.</string>
 
 </resources>
