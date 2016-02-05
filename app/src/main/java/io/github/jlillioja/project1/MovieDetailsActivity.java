@@ -1,6 +1,7 @@
 package io.github.jlillioja.project1;
 
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -27,50 +28,59 @@ import java.net.URL;
 
 public class MovieDetailsActivity extends AppCompatActivity {
 
+    private Context context;
     private JSONObject movie;
     private final static String LOG_TAG = MovieDetailsActivity.class.getSimpleName();
 
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_movie_details);
+
+        context = getApplicationContext();
 
         Intent intent = getIntent();
+        Intent errorIntent = new Intent(context, MainActivity.class);
         String movieString;
 
         try {
             if (savedInstanceState != null) {
                 Log.d(LOG_TAG, "Restoring non-null savedInstanceState");
                 movie = new JSONObject(savedInstanceState.getString(getString(R.string.key_movie)));
-            } else if ((movieString = intent.getStringExtra(getString(R.string.key_movie))) != null){
-                Log.d(LOG_TAG, "Attempting to restore from intent");
-
-                movie = new JSONObject(movieString);
             } else {
-                AlertDialog.Builder alertBuilder = new AlertDialog.Builder(getApplicationContext());
-                alertBuilder.setMessage(getString(R.string.no_movie)).show();
-                Intent errorIntent = new Intent(getApplicationContext(), MainActivity.class);
-                startActivity(errorIntent);
+                if ((movieString = intent.getStringExtra(getString(R.string.key_movie))) != null) {
+                    Log.d(LOG_TAG, "Attempting to restore from intent");
+
+                    movie = new JSONObject(movieString);
+                    if (movie == null) {
+                        startActivity(errorIntent);
+                    }
+                } else {
+                    Log.d(LOG_TAG, "No movie from savedInstanceState or intent");
+                    startActivity(new Intent(context, MainActivity.class));
+                }
             }
+            super.onCreate(savedInstanceState);
+            setContentView(R.layout.activity_movie_details);
 
-        ImageView image = (ImageView) findViewById(R.id.poster_imageView);
-        ImageAdapter.loadImage(image, movie, this);
+            ImageView image = (ImageView) findViewById(R.id.poster_imageView);
+            ImageAdapter.loadImage(image, movie, this);
 
-        TextView title = (TextView) findViewById(R.id.title_textView);
-        title.setText(movie.getString("original_title"));
+            TextView title = (TextView) findViewById(R.id.title_textView);
+            title.setText(movie.getString("original_title"));
 
-        TextView overview = (TextView) findViewById(R.id.overview_textView);
-        overview.setText(movie.getString("overview"));
+            TextView overview = (TextView) findViewById(R.id.overview_textView);
+            overview.setText(movie.getString("overview"));
 
-        TextView release = (TextView) findViewById(R.id.release_textView);
-        release.setText(getString(R.string.release_date_title) + movie.getString("release_date"));
+            TextView release = (TextView) findViewById(R.id.release_textView);
+            release.setText(getString(R.string.release_date_title) + movie.getString("release_date"));
 
-        TextView rating = (TextView) findViewById(R.id.rating_textView);
-        rating.setText(getString(R.string.rating_title) + movie.getString("vote_average"));
+            TextView rating = (TextView) findViewById(R.id.rating_textView);
+            rating.setText(getString(R.string.rating_title) + movie.getString("vote_average"));
 
-        Button trailer = (Button) findViewById(R.id.trailer_button);
-        //trailer.setText(R.string.trailer_title); //Changed to hardcoded button text in XML layout. Which is a better design pattern?
+            Button trailer = (Button) findViewById(R.id.trailer_button);
+            //trailer.setText(R.string.trailer_title); //Changed to hardcoded button text in XML layout. Which is a better design pattern?
+
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -86,10 +96,7 @@ public class MovieDetailsActivity extends AppCompatActivity {
         super.onSaveInstanceState(savedInstanceState);
     }
 
-    public void launchTrailer(View view) {
-        new launchTrailerTask().execute();
-
-    }
+    public void launchTrailer(View view) { new launchTrailerTask().execute(); }
 
     private class launchTrailerTask extends AsyncTask<Void, Void, Intent> {
         private final String LOG_TAG = launchTrailerTask.class.getSimpleName();
