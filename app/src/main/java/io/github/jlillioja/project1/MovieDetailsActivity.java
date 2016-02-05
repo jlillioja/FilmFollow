@@ -1,5 +1,7 @@
 package io.github.jlillioja.project1;
 
+import android.app.AlertDialog;
+import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -22,22 +24,44 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URL;
 
 public class MovieDetailsActivity extends AppCompatActivity {
 
-    JSONObject movie;
+    private Context context;
+    private JSONObject movie;
+    private final static String LOG_TAG = MovieDetailsActivity.class.getSimpleName();
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_movie_details);
+
+        context = getApplicationContext();
 
         Intent intent = getIntent();
+        Intent errorIntent = new Intent(context, MainActivity.class);
+        String movieString;
 
         try {
-            movie = new JSONObject(intent.getStringExtra(getString(R.string.key_movie)));
+            if (savedInstanceState != null) {
+                Log.d(LOG_TAG, "Restoring non-null savedInstanceState");
+                movie = new JSONObject(savedInstanceState.getString(getString(R.string.key_movie)));
+            } else {
+                if ((movieString = intent.getStringExtra(getString(R.string.key_movie))) != null) {
+                    Log.d(LOG_TAG, "Attempting to restore from intent");
+
+                    movie = new JSONObject(movieString);
+                    if (movie == null) {
+                        startActivity(errorIntent);
+                    }
+                } else {
+                    Log.d(LOG_TAG, "No movie from savedInstanceState or intent");
+                    startActivity(new Intent(context, MainActivity.class));
+                }
+            }
+            super.onCreate(savedInstanceState);
+            setContentView(R.layout.activity_movie_details);
 
             ImageView image = (ImageView) findViewById(R.id.poster_imageView);
             ImageAdapter.loadImage(image, movie, this);
@@ -62,10 +86,17 @@ public class MovieDetailsActivity extends AppCompatActivity {
         }
     }
 
-    public void launchTrailer(View view) {
-        new launchTrailerTask().execute();
-
+    @Override
+    public void onSaveInstanceState(Bundle savedInstanceState) {
+        if (movie != null) {
+            String movieString = movie.toString();
+            Log.d(LOG_TAG, "Saving non-null instance state: "+movieString);
+            savedInstanceState.putString(getString(R.string.key_movie), movieString);
+        }
+        super.onSaveInstanceState(savedInstanceState);
     }
+
+    public void launchTrailer(View view) { new launchTrailerTask().execute(); }
 
     private class launchTrailerTask extends AsyncTask<Void, Void, Intent> {
         private final String LOG_TAG = launchTrailerTask.class.getSimpleName();
@@ -141,70 +172,8 @@ public class MovieDetailsActivity extends AppCompatActivity {
     }
 
     public void viewReviews (View view) {
-        new viewReviewsTask().execute();
-    }
-
-    private class viewReviewsTask extends AsyncTask<Void, Void, JSONArray> {
-        public final String LOG_TAG = "viewReviewsTask";
-
-        protected JSONArray doInBackground(Void... params) {
-
-            HttpURLConnection urlConnection = null;
-            try {
-
-                URL url = new URL(Uri.parse(getString(R.string.tmdb_movie_path)).buildUpon()
-                        .appendPath(movie.getString("id"))
-                        .appendPath(getString(R.string.path_reviews))
-                        .appendQueryParameter(getString(R.string.api_key_query), getApplicationContext().getString(R.string.api_key))
-                        .build().toString());
-
-                Log.d(LOG_TAG, "Accessing: "+url.toString());
-
-                urlConnection = (HttpURLConnection) url.openConnection();
-                InputStream in = new BufferedInputStream(urlConnection.getInputStream());
-
-                StringBuilder inStringBuilder = new StringBuilder();
-                String line;
-
-                BufferedReader reader = new BufferedReader(new InputStreamReader(in));
-                while (((line = reader.readLine()) != null)) {
-                    inStringBuilder.append(line);
-                }
-
-                String inString = inStringBuilder.toString();
-                Log.v(LOG_TAG, "Raw input: "+inString);
-
-                JSONObject reviewsJSON = new JSONObject(inString);
-                Log.v(LOG_TAG, "After JSON passthrough: "+reviewsJSON.toString());
-
-                JSONArray reviewsArray = reviewsJSON.getJSONArray("results");
-
-                Log.v(LOG_TAG, "First item in reviewsArray: "+reviewsArray.getJSONObject(0).getString("content").toString());
-
-                return reviewsArray;
-
-
-            } catch (IOException err) {
-                Log.d(LOG_TAG, "Failed with IOException");
-                err.printStackTrace();
-                return null;
-            } catch (JSONException err) {
-                Log.d(LOG_TAG, "Failed with JSONEXception");
-                err.printStackTrace();
-                return null;
-            } finally {
-                urlConnection.disconnect();
-            }
-        }
-
-        protected void onPostExecute (JSONArray reviewsJSON) {
-            Log.d(LOG_TAG, "entered onPostExecute");
-            if (reviewsJSON != null) {
-                Log.d(LOG_TAG, "reviewsJSON not null");
-                Intent intent = new Intent(getApplicationContext(), MovieReviewsActivity.class);
-                intent.putExtra(getString(R.string.key_reviews), reviewsJSON.toString());
-                startActivity(intent);
-            } else {Log.d(LOG_TAG, "reviewsJSON null");}
-        }
+        Intent intent = new Intent(getApplicationContext(), MovieReviewsActivity.class);
+        intent.putExtra(getString(R.string.key_movie), movie.toString());
+        startActivity(intent);
     }
 }
