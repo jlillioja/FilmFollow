@@ -28,7 +28,9 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -159,10 +161,9 @@ public class MainActivity extends AppCompatActivity {
         /* Assign internal moviesList object and create and bind ImageAdapter to grid. */
         protected void onPostExecute(JSONObject result) {
             if (result != null) {
-                JSONObject moviesJSON = result;
                 List<JSONObject> moviesList = new ArrayList<JSONObject>();
                 try {
-                    JSONArray moviesArray = moviesJSON.getJSONArray(context.getString(R.string.results_key));
+                    JSONArray moviesArray = result.getJSONArray(context.getString(R.string.results_key));
                     for (int i = 0; i < moviesArray.length(); i++) {
                         moviesList.add(moviesArray.getJSONObject(i));
                     }
@@ -178,11 +179,30 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    private class populateFavoritesTask extends AsyncTask {
+    private class populateFavoritesTask extends AsyncTask<Void, Void, List<JSONObject>> {
+
         @Override
-        protected Object doInBackground(Object[] params) {
-            List<Favorite> favoritesList = Favorite.listAll(Favorite.class);
-            return unwrapMovies(favoritesList);
+        protected List<JSONObject> doInBackground(Void... params) {
+
+            /* Fetch list of favorite IDs */
+            Set<String> favoriteIDs = settings.getStringSet(getString(R.string.key_favorites), Collections.EMPTY_SET);
+            if (favoriteIDs.isEmpty()) return null;
+
+            /* Make a list of movieJSONs with those IDs */
+            /* Could this be parallelized? */
+            List<JSONObject> favorites = new ArrayList<>();
+            try {
+                while (favoriteIDs.iterator().hasNext()) {
+                    favorites.add(fetchMovie(favoriteIDs.iterator().next()));
+                }
+                return favorites;
+            }catch (JSONException e) {
+                e.printStackTrace();
+                return null;
+            } catch (IOException e) {
+                e.printStackTrace();
+                return null;
+            }
         }
 
         protected void onPostExecute(List<JSONObject> result) {
@@ -191,17 +211,28 @@ public class MainActivity extends AppCompatActivity {
             mAdapter = new FavoritesAdapter(context, R.layout.grid_item, moviesList);
             gridView.setAdapter(mAdapter);
         }
+    }
 
+    private static JSONObject fetchMovie(String id) throws IOException, JSONException {
+        HttpURLConnection urlConnection;
+        URL url = new URL(Uri.parse("http://api.themoviedb.org/3/movie/")
+                .buildUpon()
+                .appendPath(id)
+                .build().toString());
+        urlConnection = (HttpURLConnection) url.openConnection();
 
-        private List<JSONObject> unwrapMovies(List<Favorite> favoritesList) {
-            List<JSONObject> moviesJSONList = new ArrayList<JSONObject>();
-            for (int i=0;i<favoritesList.size();i++) {
-                moviesJSONList.add(i, favoritesList.get(i).movie);
-            }
-            return moviesJSONList;
+        InputStream in = new BufferedInputStream(urlConnection.getInputStream());
+        StringBuilder inStringBuilder = new StringBuilder();
+        String line;
+
+        BufferedReader reader = new BufferedReader(new InputStreamReader(in));
+        while (((line = reader.readLine()) != null)) {
+            inStringBuilder.append(line);
         }
 
+        String inString = inStringBuilder.toString();
 
+        return new JSONObject(inString);
     }
 
 

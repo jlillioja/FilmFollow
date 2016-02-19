@@ -19,5 +19,6 @@
     <string name="not_implemented">Feature not yet implemented.</string>
     <string name="youtube_path">http://www.youtube.com</string>
     <string name="key_moviesList">moviesList</string>
+    <string name="key_favorites">favorites</string>
 
 </resources>
