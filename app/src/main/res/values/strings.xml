@@ -20,5 +20,6 @@
     <string name="youtube_path">http://www.youtube.com</string>
     <string name="key_moviesList">moviesList</string>
     <string name="key_favorites">favorites</string>
+    <string name="id_key">id</string>
 
 </resources>

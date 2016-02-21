@@ -105,8 +105,8 @@ public class MainActivity extends AppCompatActivity {
         }
 
         if (id == R.id.favorites_view) {
-            Toast.makeText(getApplicationContext(), getString(R.string.not_implemented), Toast.LENGTH_SHORT).show();
             new populateFavoritesTask().execute();
+            return true;
         }
 
         return super.onOptionsItemSelected(item);
@@ -161,7 +161,7 @@ public class MainActivity extends AppCompatActivity {
         /* Assign internal moviesList object and create and bind ImageAdapter to grid. */
         protected void onPostExecute(JSONObject result) {
             if (result != null) {
-                List<JSONObject> moviesList = new ArrayList<JSONObject>();
+                moviesList = new ArrayList<JSONObject>();
                 try {
                     JSONArray moviesArray = result.getJSONArray(context.getString(R.string.results_key));
                     for (int i = 0; i < moviesArray.length(); i++) {
@@ -208,7 +208,7 @@ public class MainActivity extends AppCompatActivity {
         protected void onPostExecute(List<JSONObject> result) {
             moviesList = result;
             GridView gridView = (GridView) findViewById(R.id.gridView);
-            mAdapter = new FavoritesAdapter(context, R.layout.grid_item, moviesList);
+            mAdapter = new ImageAdapter(context, R.layout.grid_item, moviesList);
             gridView.setAdapter(mAdapter);
         }
     }

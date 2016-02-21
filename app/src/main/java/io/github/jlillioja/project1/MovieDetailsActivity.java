@@ -1,6 +1,7 @@
 package io.github.jlillioja.project1;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -23,6 +24,9 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 
 public class MovieDetailsActivity extends AppCompatActivity {
 
@@ -131,8 +135,19 @@ public class MovieDetailsActivity extends AppCompatActivity {
         }
     }
 
-    public void onToggleStar (View view) {
+    public void onToggleStar (View view) throws JSONException {
+
+        /* Checks that this is actually being run */
         Toast.makeText(getApplicationContext(), getString(R.string.not_implemented), Toast.LENGTH_SHORT).show();
+
+        /* Add this movie to the favorites set */
+        String id = Integer.toString(movie.getInt(getString(R.string.id_key)));
+        String favorite_key = getString(R.string.key_favorites);
+        SharedPreferences settings = getPreferences(MODE_PRIVATE);
+        Set<String> oldFavorites = settings.getStringSet(favorite_key, Collections.EMPTY_SET);
+        Set<String> newFavorites = new HashSet<String>(oldFavorites);
+        newFavorites.add(id);
+        settings.edit().putStringSet(favorite_key, newFavorites).apply();
     }
 
     public void viewReviews (View view) {
