@@ -35,13 +35,20 @@ import java.util.Set;
 
 public class MainActivity extends AppCompatActivity {
 
+<<<<<<< HEAD
     protected List<JSONObject> moviesList;
+=======
+    private final static String LOG_TAG = "MainActivity";
+
+    protected JSONObject moviesJSON;
+>>>>>>> refs/remotes/origin/master
     protected ImageAdapter mAdapter;
     SharedPreferences settings;
     Context context;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        Log.d(LOG_TAG, "Entered MainActivity");
         super.onCreate(savedInstanceState);
 
         context = getApplicationContext();
@@ -61,8 +68,13 @@ public class MainActivity extends AppCompatActivity {
         });
 
         if (savedInstanceState != null) {
+<<<<<<< HEAD
             List<String> savedMoviesStringList;
             if ((savedMoviesStringList = savedInstanceState.getStringArrayList(getString(R.string.key_moviesList))) != null) {
+=======
+            String savedMoviesJSON;
+            if ((savedMoviesJSON = savedInstanceState.getString(getString(R.string.key_moviesJSON))) != null) {
+>>>>>>> refs/remotes/origin/master
                 try {
                     moviesList = toJSONList(savedMoviesStringList);
                 } catch (JSONException e) {
@@ -74,9 +86,14 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void onSaveInstanceState(Bundle savedInstanceState) {
+<<<<<<< HEAD
         if (moviesList != null) {
             savedInstanceState.putStringArrayList(getString(R.string.key_moviesList), toStringArrayList(moviesList));
         }
+=======
+        if (moviesJSON != null)
+            savedInstanceState.putString(getString(R.string.key_moviesJSON), moviesJSON.toString());
+>>>>>>> refs/remotes/origin/master
         super.onSaveInstanceState(savedInstanceState);
     }
 

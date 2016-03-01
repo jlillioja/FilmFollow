@@ -1,5 +1,7 @@
 package io.github.jlillioja.project1;
 
+import android.app.AlertDialog;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
@@ -14,6 +16,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ToggleButton;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -23,7 +26,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Collections;
 import java.util.HashSet;
@@ -31,17 +33,40 @@ import java.util.Set;
 
 public class MovieDetailsActivity extends AppCompatActivity {
 
-    JSONObject movie;
+    private Context context;
+    private JSONObject movie;
+    private final static String LOG_TAG = MovieDetailsActivity.class.getSimpleName();
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_movie_details);
+
+        context = getApplicationContext();
 
         Intent intent = getIntent();
+        Intent errorIntent = new Intent(context, MainActivity.class);
+        String movieString;
 
         try {
-            movie = new JSONObject(intent.getStringExtra(getString(R.string.key_movie)));
+            if (savedInstanceState != null) {
+                Log.d(LOG_TAG, "Restoring non-null savedInstanceState");
+                movie = new JSONObject(savedInstanceState.getString(getString(R.string.key_movie)));
+            } else {
+                if ((movieString = intent.getStringExtra(getString(R.string.key_movie))) != null) {
+                    Log.d(LOG_TAG, "Attempting to restore from intent");
+
+                    movie = new JSONObject(movieString);
+                    if (movie == null) {
+                        startActivity(errorIntent);
+                    }
+                } else {
+                    Log.d(LOG_TAG, "No movie from savedInstanceState or intent");
+                    startActivity(new Intent(context, MainActivity.class));
+                }
+            }
+            super.onCreate(savedInstanceState);
+            setContentView(R.layout.activity_movie_details);
 
             ImageView image = (ImageView) findViewById(R.id.poster_imageView);
             ImageAdapter.loadImage(image, movie, this);
@@ -69,6 +94,7 @@ public class MovieDetailsActivity extends AppCompatActivity {
         }
     }
 
+<<<<<<< HEAD
     private boolean isFavorite(JSONObject movie) throws JSONException {
         return getSharedPreferences(getString(R.string.preferences), MODE_PRIVATE)
                 .getStringSet(getString(R.string.key_favorites), Collections.EMPTY_SET)
@@ -78,17 +104,30 @@ public class MovieDetailsActivity extends AppCompatActivity {
     public void launchTrailer(View view) {
         new launchTrailerTask().execute();
 
+=======
+    @Override
+    public void onSaveInstanceState(Bundle savedInstanceState) {
+        if (movie != null) {
+            String movieString = movie.toString();
+            Log.d(LOG_TAG, "Saving non-null instance state: "+movieString);
+            savedInstanceState.putString(getString(R.string.key_movie), movieString);
+        }
+        super.onSaveInstanceState(savedInstanceState);
+>>>>>>> refs/remotes/origin/master
     }
 
-    private class launchTrailerTask extends AsyncTask<Void, Void, Void> {
+    public void launchTrailer(View view) { new launchTrailerTask().execute(); }
+
+    private class launchTrailerTask extends AsyncTask<Void, Void, Intent> {
         private final String LOG_TAG = launchTrailerTask.class.getSimpleName();
 
         @Override
-        protected Void doInBackground(Void... params) {
+        protected Intent doInBackground(Void... params) {
 
             //Find Trailer
         /* Declare urlConnection outside try/catch block so it can be closed in finally. */
             HttpURLConnection urlConnection = null;
+            Intent intent = null;
 
             try {
 
@@ -113,7 +152,7 @@ public class MovieDetailsActivity extends AppCompatActivity {
                 Log.v(LOG_TAG, inString);
 
                 JSONObject videosJSON = new JSONObject(inString);
-                String videoKey = videosJSON.getJSONArray(getString(R.string.results_key)).getJSONObject(0).getString(getString(R.string.key_trailer));
+                String videoKey = videosJSON.getJSONArray(getString(R.string.key_results)).getJSONObject(0).getString(getString(R.string.key_trailer));
 
                 Log.d(LOG_TAG, "videoKey: " + videoKey);
 
@@ -124,23 +163,26 @@ public class MovieDetailsActivity extends AppCompatActivity {
 
                 Log.d(LOG_TAG, "videoPath: "+videoPath.toString());
 
-                Intent intent = new Intent();
+                intent = new Intent();
                 intent.setAction(Intent.ACTION_VIEW);
                 intent.setData(videoPath);
+                return intent;
 
+            } catch (JSONException | IOException err) {
+                err.printStackTrace();
+                return null;
+            } finally {
+                if (urlConnection != null) {
+                    urlConnection.disconnect();
+                }
+            }
+        }
+
+        protected void onPostExecute(Intent intent) {
+            if (intent != null) {
                 if (intent.resolveActivity(getPackageManager()) != null) {
                     startActivity(intent);
                 }
-
-            } catch (MalformedURLException err) {
-                err.printStackTrace();
-            } catch (IOException err) {
-                err.printStackTrace();
-            } catch (JSONException err) {
-                err.printStackTrace();
-            } finally {
-                urlConnection.disconnect();
-                return null;
             }
         }
     }
@@ -168,6 +210,8 @@ public class MovieDetailsActivity extends AppCompatActivity {
     }
 
     public void viewReviews (View view) {
-        Toast.makeText(getApplicationContext(), getString(R.string.not_implemented), Toast.LENGTH_SHORT).show();
+        Intent intent = new Intent(getApplicationContext(), MovieReviewsActivity.class);
+        intent.putExtra(getString(R.string.key_movie), movie.toString());
+        startActivity(intent);
     }
 }

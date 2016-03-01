@@ -5,8 +5,10 @@
     <string name="tmdb_movie_path">http://api.themoviedb.org/3/movie </string>
     <string name="api_key_query">api_key</string>
     <string name="sort_query">sort_by</string>
-    <string name="results_key">results</string>
+    <string name="key_results">results</string>
     <string name="title_key">original_title</string>
     <string name="poster_key">poster_path</string>
     <string name="key_trailer">key</string>
+    <string name="path_videos">videos</string>
+    <string name="key_reviews">reviews</string>
 </resources>

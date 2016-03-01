@@ -22,17 +22,38 @@ import java.util.List;
  */
 public class ImageAdapter extends BaseAdapter {
 
+    private final String LOG_TAG = ImageAdapter.class.getSimpleName();
+    int layoutResourceID;
     private Context context;
+<<<<<<< HEAD
     private List<JSONObject> movies = null;
     int layoutResourceID;
 
     private final String LOG_TAG = ImageAdapter.class.getSimpleName();
+=======
+    private JSONObject moviesJSON = null;
+>>>>>>> refs/remotes/origin/master
 
     public ImageAdapter(Context context, int layoutResourceID, List<JSONObject> movies) {
         super();
         this.context = context;
         this.movies = movies;
         this.layoutResourceID = layoutResourceID;
+    }
+
+    /* Static method to allow loading of image into an ImageView given a JSONObject movie. Used on details screen without the superclass. */
+    public static Uri loadImage(ImageView imageView, JSONObject movie, Context context) throws JSONException {
+        String imagePath = movie.getString(context.getString(R.string.poster_key));
+        Uri imageURL = Uri.parse(context.getString(R.string.tmdb_image_path)).buildUpon()
+                .appendPath(context.getString(R.string.imageSize))
+                .appendEncodedPath(imagePath)
+                .build();
+
+        Picasso.with(context)
+                .load(imageURL)
+                .into(imageView);
+
+        return imageURL;
     }
 
     public int getCount() {
@@ -60,6 +81,7 @@ public class ImageAdapter extends BaseAdapter {
             itemView = convertView;
         }
 
+<<<<<<< HEAD
 
         if (movies == null) {
             Toast.makeText(context, R.string.movies_not_loaded, Toast.LENGTH_LONG).show();
@@ -67,6 +89,10 @@ public class ImageAdapter extends BaseAdapter {
         } else {
             try {
                 JSONObject movie = movies.get(position);
+=======
+        try {
+            JSONObject movie = moviesJSON.getJSONArray(context.getString(R.string.key_results)).getJSONObject(position);
+>>>>>>> refs/remotes/origin/master
 
             /* Load poster from movie into itemView's ImageView */
                 loadImage((ImageView) itemView.findViewById(R.id.grid_image), movie, context);
@@ -80,20 +106,5 @@ public class ImageAdapter extends BaseAdapter {
                 return null;
             }
         }
-    }
-
-    /* Static method to allow loading of image into an ImageView given a JSONObject movie. Used on details screen without the superclass. */
-    public static Uri loadImage(ImageView imageView, JSONObject movie, Context context) throws JSONException {
-        String imagePath = movie.getString(context.getString(R.string.poster_key));
-        Uri imageURL = Uri.parse(context.getString(R.string.tmdb_image_path)).buildUpon()
-                .appendPath(context.getString(R.string.imageSize))
-                .appendEncodedPath(imagePath)
-                .build();
-
-        Picasso.with(context)
-                .load(imageURL)
-                .into(imageView);
-
-        return imageURL;
     }
 }
