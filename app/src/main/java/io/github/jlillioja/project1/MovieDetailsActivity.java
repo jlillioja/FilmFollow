@@ -12,6 +12,7 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.ToggleButton;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -135,18 +136,22 @@ public class MovieDetailsActivity extends AppCompatActivity {
         }
     }
 
-    public void onToggleStar (View view) throws JSONException {
+    public void onToggleStar(View view) throws JSONException {
 
-        /* Checks that this is actually being run */
-        Toast.makeText(getApplicationContext(), getString(R.string.not_implemented), Toast.LENGTH_SHORT).show();
-
-        /* Add this movie to the favorites set */
+        ToggleButton button = (ToggleButton) view;
         String id = Integer.toString(movie.getInt(getString(R.string.id_key)));
         String favorite_key = getString(R.string.key_favorites);
         SharedPreferences settings = getSharedPreferences(getString(R.string.preferences), MODE_PRIVATE);
         Set<String> oldFavorites = settings.getStringSet(favorite_key, Collections.EMPTY_SET);
         Set<String> newFavorites = new HashSet<String>(oldFavorites);
-        newFavorites.add(id);
+
+        /* If the button is checked, make sure this movie is in the favorites set.
+           Otherwise, make sure it isn't. */
+        if (button.isChecked()) {
+            newFavorites.add(id);
+        } else {
+            newFavorites.remove(id);
+        }
         settings.edit()
                 .remove(favorite_key)
                 .putStringSet(favorite_key, newFavorites)
