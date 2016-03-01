@@ -3,6 +3,7 @@ package io.github.jlillioja.project1;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -13,6 +14,7 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.ToggleButton;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -25,6 +27,9 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 
 public class MovieDetailsActivity extends AppCompatActivity {
 
@@ -66,6 +71,9 @@ public class MovieDetailsActivity extends AppCompatActivity {
             ImageView image = (ImageView) findViewById(R.id.poster_imageView);
             ImageAdapter.loadImage(image, movie, this);
 
+            ToggleButton favorite = (ToggleButton) findViewById(R.id.favorite_button);
+            if (isFavorite(movie)) favorite.setChecked(true); /* Set off by default */
+
             TextView title = (TextView) findViewById(R.id.title_textView);
             title.setText(movie.getString("original_title"));
 
@@ -86,6 +94,16 @@ public class MovieDetailsActivity extends AppCompatActivity {
         }
     }
 
+    private boolean isFavorite(JSONObject movie) throws JSONException {
+        return getSharedPreferences(getString(R.string.preferences), MODE_PRIVATE)
+                .getStringSet(getString(R.string.key_favorites), Collections.EMPTY_SET)
+                .contains(Integer.toString(movie.getInt(getString(R.string.id_key))));
+    }
+
+    public void launchTrailer(View view) {
+        new launchTrailerTask().execute();
+    }
+
     @Override
     public void onSaveInstanceState(Bundle savedInstanceState) {
         if (movie != null) {
@@ -94,9 +112,8 @@ public class MovieDetailsActivity extends AppCompatActivity {
             savedInstanceState.putString(getString(R.string.key_movie), movieString);
         }
         super.onSaveInstanceState(savedInstanceState);
-    }
 
-    public void launchTrailer(View view) { new launchTrailerTask().execute(); }
+    }
 
     private class launchTrailerTask extends AsyncTask<Void, Void, Intent> {
         private final String LOG_TAG = launchTrailerTask.class.getSimpleName();
@@ -167,8 +184,26 @@ public class MovieDetailsActivity extends AppCompatActivity {
         }
     }
 
-    public void onToggleStar (View view) {
-        Toast.makeText(getApplicationContext(), getString(R.string.not_implemented), Toast.LENGTH_SHORT).show();
+    public void onToggleStar(View view) throws JSONException {
+
+        ToggleButton button = (ToggleButton) view;
+        String id = Integer.toString(movie.getInt(getString(R.string.id_key)));
+        String favorite_key = getString(R.string.key_favorites);
+        SharedPreferences settings = getSharedPreferences(getString(R.string.preferences), MODE_PRIVATE);
+        Set<String> oldFavorites = settings.getStringSet(favorite_key, Collections.EMPTY_SET);
+        Set<String> newFavorites = new HashSet<String>(oldFavorites);
+
+        /* If the button is checked, make sure this movie is in the favorites set.
+           Otherwise, make sure it isn't. */
+        if (button.isChecked()) {
+            newFavorites.add(id);
+        } else {
+            newFavorites.remove(id);
+        }
+        settings.edit()
+                .remove(favorite_key)
+                .putStringSet(favorite_key, newFavorites)
+                .apply();
     }
 
     public void viewReviews (View view) {

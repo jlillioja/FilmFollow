@@ -15,6 +15,8 @@ import com.squareup.picasso.Picasso;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.List;
+
 /**
  * Created by jlillioja on 11/29/2015.
  */
@@ -23,12 +25,19 @@ public class ImageAdapter extends BaseAdapter {
     private final String LOG_TAG = ImageAdapter.class.getSimpleName();
     int layoutResourceID;
     private Context context;
-    private JSONObject moviesJSON = null;
+<<<<<<< HEAD
+    private List<JSONObject> movies = null;
+    int layoutResourceID;
 
-    public ImageAdapter(Context context, int layoutResourceID, JSONObject moviesJSON) {
+    private final String LOG_TAG = ImageAdapter.class.getSimpleName();
+=======
+    private JSONObject moviesJSON = null;
+>>>>>>> refs/remotes/origin/master
+
+    public ImageAdapter(Context context, int layoutResourceID, List<JSONObject> movies) {
         super();
         this.context = context;
-        this.moviesJSON = moviesJSON;
+        this.movies = movies;
         this.layoutResourceID = layoutResourceID;
     }
 
@@ -48,21 +57,13 @@ public class ImageAdapter extends BaseAdapter {
     }
 
     public int getCount() {
-        if (moviesJSON == null) return 0;
-        try {
-            return moviesJSON.getJSONArray("results").length();
-        } catch (JSONException err) {
-            return 0;
-        }
+        if (movies == null) return 0;
+        else return movies.size();
     }
 
     public JSONObject getItem(int position) {
-        if (moviesJSON == null) return null;
-        try {
-            return (JSONObject) moviesJSON.getJSONArray("results").get(position);
-        } catch (JSONException err) {
-            return null;
-        }
+        if (movies == null) return null;
+        else return (JSONObject) movies.get(position);
     }
 
     public long getItemId(int position) {
@@ -72,11 +73,6 @@ public class ImageAdapter extends BaseAdapter {
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
 
-        if (moviesJSON == null) {
-            Toast.makeText(context, R.string.movies_not_loaded, Toast.LENGTH_LONG).show();
-            return null;
-        }
-
         View itemView;
         if (convertView == null) {
             LayoutInflater inflater = LayoutInflater.from(context);
@@ -85,19 +81,30 @@ public class ImageAdapter extends BaseAdapter {
             itemView = convertView;
         }
 
+<<<<<<< HEAD
+
+        if (movies == null) {
+            Toast.makeText(context, R.string.movies_not_loaded, Toast.LENGTH_LONG).show();
+            return null;
+        } else {
+            try {
+                JSONObject movie = movies.get(position);
+=======
         try {
             JSONObject movie = moviesJSON.getJSONArray(context.getString(R.string.key_results)).getJSONObject(position);
+>>>>>>> refs/remotes/origin/master
 
             /* Load poster from movie into itemView's ImageView */
-            loadImage((ImageView) itemView.findViewById(R.id.grid_image), movie, context);
+                loadImage((ImageView) itemView.findViewById(R.id.grid_image), movie, context);
 
             /* Subtitle poster with movie name. */
-            ((TextView) itemView.findViewById(R.id.grid_item_title)).setText(movie.getString(context.getString(R.string.title_key)));
+                ((TextView) itemView.findViewById(R.id.grid_item_title)).setText(movie.getString(context.getString(R.string.title_key)));
 
-            return itemView;
-        } catch (JSONException err) {
-            err.printStackTrace();
-            return null;
+                return itemView;
+            } catch (JSONException err) {
+                err.printStackTrace();
+                return null;
+            }
         }
     }
 }
