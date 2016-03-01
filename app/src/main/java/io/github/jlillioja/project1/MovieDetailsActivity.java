@@ -46,6 +46,9 @@ public class MovieDetailsActivity extends AppCompatActivity {
             ImageView image = (ImageView) findViewById(R.id.poster_imageView);
             ImageAdapter.loadImage(image, movie, this);
 
+            ToggleButton favorite = (ToggleButton) findViewById(R.id.favorite_button);
+            if (isFavorite(movie)) favorite.setChecked(true); /* Set off by default */
+
             TextView title = (TextView) findViewById(R.id.title_textView);
             title.setText(movie.getString("original_title"));
 
@@ -64,6 +67,12 @@ public class MovieDetailsActivity extends AppCompatActivity {
         } catch (JSONException e) {
             e.printStackTrace();
         }
+    }
+
+    private boolean isFavorite(JSONObject movie) throws JSONException {
+        return getSharedPreferences(getString(R.string.preferences), MODE_PRIVATE)
+                .getStringSet(getString(R.string.key_favorites), Collections.EMPTY_SET)
+                .contains(Integer.toString(movie.getInt(getString(R.string.id_key))));
     }
 
     public void launchTrailer(View view) {
