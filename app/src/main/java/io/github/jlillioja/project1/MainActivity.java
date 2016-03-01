@@ -29,6 +29,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -46,7 +47,7 @@ public class MainActivity extends AppCompatActivity {
         context = getApplicationContext();
 
         setContentView(R.layout.activity_main);
-        settings = getPreferences(MODE_PRIVATE);
+        settings = getSharedPreferences(getString(R.string.preferences), MODE_PRIVATE);
 
         GridView gridView = (GridView) findViewById(R.id.gridView);
         gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -185,15 +186,16 @@ public class MainActivity extends AppCompatActivity {
         protected List<JSONObject> doInBackground(Void... params) {
 
             /* Fetch list of favorite IDs */
-            Set<String> favoriteIDs = settings.getStringSet(getString(R.string.key_favorites), Collections.EMPTY_SET);
+            Set<String> favoriteIDs = getSharedPreferences(getString(R.string.preferences), MODE_PRIVATE).getStringSet(getString(R.string.key_favorites), Collections.EMPTY_SET);
             if (favoriteIDs.isEmpty()) return null;
+            Iterator<String> iterator = favoriteIDs.iterator();
 
             /* Make a list of movieJSONs with those IDs */
             /* Could this be parallelized? */
             List<JSONObject> favorites = new ArrayList<>();
             try {
-                while (favoriteIDs.iterator().hasNext()) {
-                    favorites.add(fetchMovie(favoriteIDs.iterator().next()));
+                while (iterator.hasNext()) {
+                    favorites.add(fetchMovie(iterator.next()));
                 }
                 return favorites;
             }catch (JSONException e) {
@@ -213,13 +215,18 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private static JSONObject fetchMovie(String id) throws IOException, JSONException {
+    private JSONObject fetchMovie(String id) throws IOException, JSONException {
+        String LOG_TAG = "fetchMovie";
         HttpURLConnection urlConnection;
-        URL url = new URL(Uri.parse("http://api.themoviedb.org/3/movie/")
+        URL url = new URL(Uri.parse(getString(R.string.tmdb_movie_path))
                 .buildUpon()
                 .appendPath(id)
+                .appendQueryParameter(getString(R.string.api_key_query), getString(R.string.api_key))
                 .build().toString());
+
+        Log.d(LOG_TAG, url.toString());
         urlConnection = (HttpURLConnection) url.openConnection();
+        urlConnection.setDoOutput(false);
 
         InputStream in = new BufferedInputStream(urlConnection.getInputStream());
         StringBuilder inStringBuilder = new StringBuilder();

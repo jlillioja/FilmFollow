@@ -21,5 +21,6 @@
     <string name="key_moviesList">moviesList</string>
     <string name="key_favorites">favorites</string>
     <string name="id_key">id</string>
+    <string name="preferences">My Preferences</string>
 
 </resources>

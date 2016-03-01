@@ -143,11 +143,14 @@ public class MovieDetailsActivity extends AppCompatActivity {
         /* Add this movie to the favorites set */
         String id = Integer.toString(movie.getInt(getString(R.string.id_key)));
         String favorite_key = getString(R.string.key_favorites);
-        SharedPreferences settings = getPreferences(MODE_PRIVATE);
+        SharedPreferences settings = getSharedPreferences(getString(R.string.preferences), MODE_PRIVATE);
         Set<String> oldFavorites = settings.getStringSet(favorite_key, Collections.EMPTY_SET);
         Set<String> newFavorites = new HashSet<String>(oldFavorites);
         newFavorites.add(id);
-        settings.edit().putStringSet(favorite_key, newFavorites).apply();
+        settings.edit()
+                .remove(favorite_key)
+                .putStringSet(favorite_key, newFavorites)
+                .apply();
     }
 
     public void viewReviews (View view) {
