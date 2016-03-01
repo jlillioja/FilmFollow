@@ -94,7 +94,6 @@ public class MovieDetailsActivity extends AppCompatActivity {
         }
     }
 
-<<<<<<< HEAD
     private boolean isFavorite(JSONObject movie) throws JSONException {
         return getSharedPreferences(getString(R.string.preferences), MODE_PRIVATE)
                 .getStringSet(getString(R.string.key_favorites), Collections.EMPTY_SET)
@@ -103,8 +102,8 @@ public class MovieDetailsActivity extends AppCompatActivity {
 
     public void launchTrailer(View view) {
         new launchTrailerTask().execute();
+    }
 
-=======
     @Override
     public void onSaveInstanceState(Bundle savedInstanceState) {
         if (movie != null) {
@@ -113,10 +112,8 @@ public class MovieDetailsActivity extends AppCompatActivity {
             savedInstanceState.putString(getString(R.string.key_movie), movieString);
         }
         super.onSaveInstanceState(savedInstanceState);
->>>>>>> refs/remotes/origin/master
-    }
 
-    public void launchTrailer(View view) { new launchTrailerTask().execute(); }
+    }
 
     private class launchTrailerTask extends AsyncTask<Void, Void, Intent> {
         private final String LOG_TAG = launchTrailerTask.class.getSimpleName();
