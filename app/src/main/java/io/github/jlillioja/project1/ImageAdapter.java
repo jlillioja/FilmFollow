@@ -25,14 +25,12 @@ public class ImageAdapter extends BaseAdapter {
     private final String LOG_TAG = ImageAdapter.class.getSimpleName();
     int layoutResourceID;
     private Context context;
-<<<<<<< HEAD
+
     private List<JSONObject> movies = null;
     int layoutResourceID;
 
     private final String LOG_TAG = ImageAdapter.class.getSimpleName();
-=======
-    private JSONObject moviesJSON = null;
->>>>>>> refs/remotes/origin/master
+
 
     public ImageAdapter(Context context, int layoutResourceID, List<JSONObject> movies) {
         super();
@@ -81,25 +79,19 @@ public class ImageAdapter extends BaseAdapter {
             itemView = convertView;
         }
 
-<<<<<<< HEAD
-
         if (movies == null) {
             Toast.makeText(context, R.string.movies_not_loaded, Toast.LENGTH_LONG).show();
             return null;
         } else {
             try {
                 JSONObject movie = movies.get(position);
-=======
-        try {
-            JSONObject movie = moviesJSON.getJSONArray(context.getString(R.string.key_results)).getJSONObject(position);
->>>>>>> refs/remotes/origin/master
+
 
             /* Load poster from movie into itemView's ImageView */
                 loadImage((ImageView) itemView.findViewById(R.id.grid_image), movie, context);
 
             /* Subtitle poster with movie name. */
                 ((TextView) itemView.findViewById(R.id.grid_item_title)).setText(movie.getString(context.getString(R.string.title_key)));
-
                 return itemView;
             } catch (JSONException err) {
                 err.printStackTrace();
