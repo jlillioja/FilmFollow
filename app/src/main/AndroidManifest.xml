@@ -5,33 +5,33 @@
     <uses-permission android:name="android.permission.INTERNET" />
 
     <application
-        android:name="com.orm.SugarApp"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".MainActivity">
+        <activity
+            android:name=".DiscoverFragment">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
         <activity
-            android:name=".MovieDetailsActivity"
+            android:name=".DetailsFragment"
             android:label="@string/title_activity_movie_details"
-            android:parentActivityName=".MainActivity">
+            android:parentActivityName=".DiscoverFragment">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="io.github.jlillioja.project1.MainActivity" />
+                android:value=".DiscoverFragment" />
         </activity>
         <activity
-            android:name=".MovieReviewsActivity"
+            android:name=".ReviewsFragment"
             android:label="Reviews"
-            android:parentActivityName=".MovieDetailsActivity">
+            android:parentActivityName=".DetailsFragment">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="io.github.jlillioja.project1.MovieDetailsActivity" />
+                android:value=".DetailsFragment" />
         </activity>
 
     </application>

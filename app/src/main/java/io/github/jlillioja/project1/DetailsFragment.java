@@ -1,6 +1,5 @@
 package io.github.jlillioja.project1;
 
-import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -13,10 +12,8 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 import android.widget.ToggleButton;
 
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -31,11 +28,11 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
-public class MovieDetailsActivity extends AppCompatActivity {
+public class DetailsFragment extends AppCompatActivity {
 
     private Context context;
     private JSONObject movie;
-    private final static String LOG_TAG = MovieDetailsActivity.class.getSimpleName();
+    private final static String LOG_TAG = DetailsFragment.class.getSimpleName();
 
 
 
@@ -45,7 +42,7 @@ public class MovieDetailsActivity extends AppCompatActivity {
         context = getApplicationContext();
 
         Intent intent = getIntent();
-        Intent errorIntent = new Intent(context, MainActivity.class);
+        Intent errorIntent = new Intent(context, DiscoverFragment.class);
         String movieString;
 
         try {
@@ -62,11 +59,11 @@ public class MovieDetailsActivity extends AppCompatActivity {
                     }
                 } else {
                     Log.d(LOG_TAG, "No movie from savedInstanceState or intent");
-                    startActivity(new Intent(context, MainActivity.class));
+                    startActivity(new Intent(context, DiscoverFragment.class));
                 }
             }
             super.onCreate(savedInstanceState);
-            setContentView(R.layout.activity_movie_details);
+            setContentView(R.layout.fragment_movie_details);
 
             ImageView image = (ImageView) findViewById(R.id.poster_imageView);
             ImageAdapter.loadImage(image, movie, this);
@@ -184,7 +181,7 @@ public class MovieDetailsActivity extends AppCompatActivity {
         }
     }
 
-    public void onToggleStar(View view) throws JSONException {
+    public void onToggleButton(View view) throws JSONException {
 
         ToggleButton button = (ToggleButton) view;
         String id = Integer.toString(movie.getInt(getString(R.string.id_key)));
@@ -207,7 +204,7 @@ public class MovieDetailsActivity extends AppCompatActivity {
     }
 
     public void viewReviews (View view) {
-        Intent intent = new Intent(getApplicationContext(), MovieReviewsActivity.class);
+        Intent intent = new Intent(getApplicationContext(), ReviewsFragment.class);
         intent.putExtra(getString(R.string.key_movie), movie.toString());
         startActivity(intent);
     }

@@ -13,7 +13,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.GridView;
-import android.widget.Toast;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -33,12 +32,11 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-public class MainActivity extends AppCompatActivity {
-
+public class DiscoverFragment extends AppCompatActivity {
 
     protected List<JSONObject> moviesList;
 
-    private final static String LOG_TAG = "MainActivity";
+    private final static String LOG_TAG = DiscoverFragment.class.getSimpleName();
 
     protected ImageAdapter mAdapter;
     SharedPreferences settings;
@@ -46,19 +44,18 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        Log.d(LOG_TAG, "Entered MainActivity");
         super.onCreate(savedInstanceState);
 
         context = getApplicationContext();
 
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.fragment_main);
         settings = getSharedPreferences(getString(R.string.preferences), MODE_PRIVATE);
 
         GridView gridView = (GridView) findViewById(R.id.gridView);
         gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Intent intent = new Intent(getApplicationContext(), MovieDetailsActivity.class);
+                Intent intent = new Intent(getApplicationContext(), DetailsFragment.class);
                 /*Convert movie whose click is registered to string in the intent. Could consider parcelable.*/
                 intent.putExtra(getString(R.string.key_movie), moviesList.get(position).toString());
                 startActivity(intent);
@@ -172,7 +169,7 @@ public class MainActivity extends AppCompatActivity {
             if (result != null) {
                 moviesList = new ArrayList<JSONObject>();
                 try {
-                    JSONArray moviesArray = result.getJSONArray(context.getString(R.string.results_key));
+                    JSONArray moviesArray = result.getJSONArray(context.getString(R.string.key_results));
                     for (int i = 0; i < moviesArray.length(); i++) {
                         moviesList.add(moviesArray.getJSONObject(i));
                     }

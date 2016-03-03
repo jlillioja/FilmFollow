@@ -1,24 +1,14 @@
 package io.github.jlillioja.project1;
 
-import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
-import android.widget.ImageView;
-import android.widget.ListAdapter;
 import android.widget.ListView;
-import android.widget.TextView;
-import android.widget.Toast;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -31,20 +21,18 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.List;
 
-public class MovieReviewsActivity extends AppCompatActivity {
+public class ReviewsFragment extends AppCompatActivity {
 
-    public final static String LOG_TAG = "MovieReviewsActivity";
+    public final static String LOG_TAG = ReviewsFragment.class.getSimpleName();
     JSONObject movie;
     private ListView reviewsList;
     private ArrayAdapter<String> reviewAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        Log.d(LOG_TAG, "Entered MovieReviewsActivity");
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_movie_reviews);
+        setContentView(R.layout.fragment_movie_reviews);
 
         Intent intent = getIntent();
 
