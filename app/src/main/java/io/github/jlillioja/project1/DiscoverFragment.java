@@ -18,12 +18,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -32,24 +27,28 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+
 public class DiscoverFragment extends AppCompatActivity {
 
-    protected List<JSONObject> moviesList;
+
 
     private final static String LOG_TAG = DiscoverFragment.class.getSimpleName();
+    protected List<JSONObject> moviesList;
 
     protected ImageAdapter mAdapter;
-    SharedPreferences settings;
     Context context;
+    SharedPreferences settings;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         context = getApplicationContext();
+        settings = getSharedPreferences(getString(R.string.preferences), MODE_PRIVATE);
+
 
         setContentView(R.layout.fragment_main);
         settings = getSharedPreferences(getString(R.string.preferences), MODE_PRIVATE);
+
 
         GridView gridView = (GridView) findViewById(R.id.gridView);
         gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -64,14 +63,13 @@ public class DiscoverFragment extends AppCompatActivity {
 
         if (savedInstanceState != null) {
             List<String> savedMoviesStringList;
+            /* If we can get a movie list from a savedInstanceState, use that one instead. */
             if ((savedMoviesStringList = savedInstanceState.getStringArrayList(getString(R.string.key_moviesList))) != null) {
-
                 try {
-                    moviesList = toJSONList(savedMoviesStringList);
+                    moviesList = Utils.toJSONList(savedMoviesStringList);
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
-
             } else new populateMoviesTask().execute();
         } else new populateMoviesTask().execute();
     }
@@ -79,9 +77,8 @@ public class DiscoverFragment extends AppCompatActivity {
     public void onSaveInstanceState(Bundle savedInstanceState) {
 
         if (moviesList != null) {
-            savedInstanceState.putStringArrayList(getString(R.string.key_moviesList), toStringArrayList(moviesList));
+            savedInstanceState.putStringArrayList(getString(R.string.key_moviesList), Utils.toStringArrayList(moviesList));
         }
-
         super.onSaveInstanceState(savedInstanceState);
     }
 
@@ -118,38 +115,31 @@ public class DiscoverFragment extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
+    private JSONObject fetchMovieById(String id) throws IOException, JSONException {
+        String LOG_TAG = getLocalClassName();
+
+        URL url = new URL(Uri.parse(getString(R.string.tmdb_movie_path))
+                .buildUpon()
+                .appendPath(id)
+                .appendQueryParameter(getString(R.string.api_key_query), getString(R.string.api_key))
+                .build().toString());
+
+        Log.v(LOG_TAG, url.toString());
+        return Utils.readFromUrl(url);
+    }
+
     private class populateMoviesTask extends AsyncTask<Void, Void, JSONObject> {
 
         private final String LOG_TAG = populateMoviesTask.class.getSimpleName();
 
         protected JSONObject doInBackground(Void... n) {
-
-            /* Declare urlConnection outside try/catch block so it can be closed in finally. */
-            HttpURLConnection urlConnection = null;
-
             try {
-
                 URL url = new URL(Uri.parse(getString(R.string.tmdb_discover_path)).buildUpon()
                         .appendQueryParameter(getString(R.string.api_key_query), getApplicationContext().getString(R.string.api_key))
                         .appendQueryParameter(getString(R.string.sort_query), settings.getString("sort", "popularity.desc"))
                         .build().toString());
 
-                urlConnection = (HttpURLConnection) url.openConnection();
-                InputStream in = new BufferedInputStream(urlConnection.getInputStream());
-
-                StringBuilder inStringBuilder = new StringBuilder();
-                String line;
-
-                BufferedReader reader = new BufferedReader(new InputStreamReader(in));
-                while (((line = reader.readLine()) != null)) {
-                    inStringBuilder.append(line);
-                }
-
-                String inString = inStringBuilder.toString();
-                Log.v(LOG_TAG, inString);
-
-                return new JSONObject(inString);
-
+                return Utils.readFromUrl(url);
             } catch (MalformedURLException err) {
                 err.printStackTrace();
                 return null;
@@ -159,15 +149,13 @@ public class DiscoverFragment extends AppCompatActivity {
             } catch (JSONException err) {
                 err.printStackTrace();
                 return null;
-            } finally {
-                urlConnection.disconnect();
             }
         }
 
-        /* Assign internal moviesList object and create and bind ImageAdapter to grid. */
+        /* Create internal moviesList object and create and bind ImageAdapter to grid. */
         protected void onPostExecute(JSONObject result) {
             if (result != null) {
-                moviesList = new ArrayList<JSONObject>();
+                moviesList = new ArrayList<>();
                 try {
                     JSONArray moviesArray = result.getJSONArray(context.getString(R.string.key_results));
                     for (int i = 0; i < moviesArray.length(); i++) {
@@ -176,7 +164,6 @@ public class DiscoverFragment extends AppCompatActivity {
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
-
                 GridView gridView = (GridView) findViewById(R.id.gridView);
                 mAdapter = new ImageAdapter(context, R.layout.grid_item, moviesList);
                 gridView.setAdapter(mAdapter);
@@ -191,19 +178,19 @@ public class DiscoverFragment extends AppCompatActivity {
         protected List<JSONObject> doInBackground(Void... params) {
 
             /* Fetch list of favorite IDs */
-            Set<String> favoriteIDs = getSharedPreferences(getString(R.string.preferences), MODE_PRIVATE).getStringSet(getString(R.string.key_favorites), Collections.EMPTY_SET);
+            Set<String> favoriteIDs = settings.getStringSet(getString(R.string.key_favorites), Collections.EMPTY_SET);
             if (favoriteIDs.isEmpty()) return null;
-            Iterator<String> iterator = favoriteIDs.iterator();
 
-            /* Make a list of movieJSONs with those IDs */
+            /* Turn a set of movie IDs into a list of movies. */
             /* Could this be parallelized? */
+            Iterator<String> idIterator = favoriteIDs.iterator();
             List<JSONObject> favorites = new ArrayList<>();
             try {
-                while (iterator.hasNext()) {
-                    favorites.add(fetchMovie(iterator.next()));
+                while (idIterator.hasNext()) {
+                    favorites.add(fetchMovieById(idIterator.next()));
                 }
                 return favorites;
-            }catch (JSONException e) {
+            } catch (JSONException e) {
                 e.printStackTrace();
                 return null;
             } catch (IOException e) {
@@ -220,48 +207,5 @@ public class DiscoverFragment extends AppCompatActivity {
         }
     }
 
-    private JSONObject fetchMovie(String id) throws IOException, JSONException {
-        String LOG_TAG = "fetchMovie";
-        HttpURLConnection urlConnection;
-        URL url = new URL(Uri.parse(getString(R.string.tmdb_movie_path))
-                .buildUpon()
-                .appendPath(id)
-                .appendQueryParameter(getString(R.string.api_key_query), getString(R.string.api_key))
-                .build().toString());
 
-        Log.d(LOG_TAG, url.toString());
-        urlConnection = (HttpURLConnection) url.openConnection();
-        urlConnection.setDoOutput(false);
-
-        InputStream in = new BufferedInputStream(urlConnection.getInputStream());
-        StringBuilder inStringBuilder = new StringBuilder();
-        String line;
-
-        BufferedReader reader = new BufferedReader(new InputStreamReader(in));
-        while (((line = reader.readLine()) != null)) {
-            inStringBuilder.append(line);
-        }
-
-        String inString = inStringBuilder.toString();
-
-        return new JSONObject(inString);
-    }
-
-
-    /*Static functions to allow (de)serialization of the list of movies */
-    public static ArrayList<String> toStringArrayList(List<JSONObject> array) {
-        ArrayList<String> stringList = new ArrayList<String>();
-        for (int i=0;i<array.size();i++) {
-            stringList.add(i, array.get(i).toString());
-        }
-        return stringList;
-    }
-
-    public static List<JSONObject> toJSONList (List<String> stringList) throws JSONException {
-        List<JSONObject> jsonList = new ArrayList<JSONObject>();
-        for (int i=0;i<stringList.size();i++) {
-            jsonList.add(i, new JSONObject(stringList.get(i)));
-        }
-        return jsonList;
-    }
 }

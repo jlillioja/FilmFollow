@@ -1,16 +1,11 @@
 <resources>
     <string name="app_name">Project1</string>
-
     <string name="imageSize">w185</string>
     <string name="refresh">Refresh</string>
     <string name="title_activity_movie_details">MovieDetailsActivity</string>
-
-
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
-
     <string name="movies_not_loaded">Movies not yet loaded. Try refreshing.</string>
-
     <string name="title_title">"Title: "</string>
     <string name="overview_title">"Overview: "</string>
     <string name="release_date_title">"Release Date: "</string>
@@ -18,16 +13,14 @@
     <string name="trailer_title">Watch Trailer</string>
     <string name="not_implemented">Feature not yet implemented.</string>
     <string name="youtube_path">http://www.youtube.com</string>
-
     <string name="key_moviesList">moviesList</string>
     <string name="key_favorites">favorites</string>
     <string name="id_key">id</string>
     <string name="preferences">My Preferences</string>
-
     <string name="path_reviews">reviews</string>
     <string name="title_activity_movie_reviews">MovieReviewsActivity</string>
-
     <string name="reviews_not_loaded">\"Reviews not yet loaded. Try refreshing.\"</string>
     <string name="no_movie">No movie found. Returning to movie discovery.</string>
-
+    <string name="key_title">original_title</string>
+    <string name="key_overview">overview</string>
 </resources>
