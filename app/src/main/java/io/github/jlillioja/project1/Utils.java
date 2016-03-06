@@ -75,4 +75,13 @@ public class Utils {
         }
         return jsonList;
     }
+
+    protected static JSONObject fetchMovieById(String id, Context context) throws IOException, JSONException {
+        URL url = new URL(Uri.parse(context.getString(R.string.tmdb_movie_path))
+                .buildUpon()
+                .appendPath(id)
+                .appendQueryParameter(context.getString(R.string.api_key_query), context.getString(R.string.api_key))
+                .build().toString());
+        return readFromUrl(url);
+    }
 }

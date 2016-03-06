@@ -1,14 +1,17 @@
 package io.github.jlillioja.project1;
 
+import android.app.Activity;
+import android.app.Fragment;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -23,70 +26,60 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
-public class DetailsFragment extends AppCompatActivity {
+public class DetailsFragment extends Fragment implements View.OnClickListener {
 
+    private final static String LOG_TAG = DetailsFragment.class.getSimpleName();
+    Activity activity;
     SharedPreferences settings;
+    DetailsListener callback;
     private Context context;
     private JSONObject movie;
 
-    private final static String LOG_TAG = DetailsFragment.class.getSimpleName();
-
-
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater, ViewGroup parent, Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        context = getApplicationContext();
-        settings = getSharedPreferences(getString(R.string.preferences), MODE_PRIVATE);
-        Intent intent = getIntent();
-        Intent errorIntent = new Intent(context, DiscoverFragment.class);
-        String movieString;
-
+        activity = getActivity();
+        context = activity.getApplicationContext();
+        settings = activity.getSharedPreferences(getString(R.string.preferences), Context.MODE_PRIVATE);
+        String movieString = this.getArguments().getString(context.getString(R.string.key_movie));
         try {
-            if (savedInstanceState != null) {
-                Log.d(LOG_TAG, "Restoring non-null savedInstanceState");
-                movie = new JSONObject(savedInstanceState.getString(getString(R.string.key_movie)));
-            } else if ((movieString = intent.getStringExtra(getString(R.string.key_movie))) != null) {
-                Log.d(LOG_TAG, "Attempting to restore from intent");
-                movie = new JSONObject(movieString);
-            } else {
-                if ((movieString = intent.getStringExtra(getString(R.string.key_movie))) != null) {
-                    Log.d(LOG_TAG, "Attempting to restore from intent");
+            callback = (DetailsListener) getActivity();
+        } catch (ClassCastException e) {
+            throw new ClassCastException(activity.toString());
+        }
+        try {
+            movie = new JSONObject(movieString);
+            return inflater.inflate(R.layout.fragment_movie_details, parent);
+        } catch (JSONException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
 
-                    movie = new JSONObject(movieString);
-                    if (movie == null) {
-                        startActivity(errorIntent);
-                    }
-                } else {
-                    Log.d(LOG_TAG, "No movie from savedInstanceState or intent");
-                    startActivity(new Intent(context, DiscoverFragment.class));
-                }
-            }
-            super.onCreate(savedInstanceState);
-            setContentView(R.layout.fragment_movie_details);
+    public void onViewCreated(View view, Bundle savedInstanceState) {
+        try {
+            ImageView image = (ImageView) activity.findViewById(R.id.poster_imageView);
+            Utils.loadImage(image, movie, context);
 
-            ImageView image = (ImageView) findViewById(R.id.poster_imageView);
-            Utils.loadImage(image, movie, this);
-
-            ToggleButton favorite = (ToggleButton) findViewById(R.id.favorite_button);
+            ToggleButton favorite = (ToggleButton) activity.findViewById(R.id.favorite_button);
             if (isFavorite(movie)) favorite.setChecked(true); /* Set off by default */
 
-            TextView title = (TextView) findViewById(R.id.title_textView);
+            TextView title = (TextView) activity.findViewById(R.id.title_textView);
             title.setText(movie.getString(getString(R.string.key_title)));
 
-            TextView overview = (TextView) findViewById(R.id.overview_textView);
+            TextView overview = (TextView) activity.findViewById(R.id.overview_textView);
             overview.setText(movie.getString(getString(R.string.key_overview)));
 
-            TextView release = (TextView) findViewById(R.id.release_textView);
+            TextView release = (TextView) activity.findViewById(R.id.release_textView);
             release.setText(getString(R.string.release_date_title) + movie.getString("release_date"));
 
-            TextView rating = (TextView) findViewById(R.id.rating_textView);
+            TextView rating = (TextView) activity.findViewById(R.id.rating_textView);
             rating.setText(getString(R.string.rating_title) + movie.getString("vote_average"));
 
-            Button trailer = (Button) findViewById(R.id.trailer_button);
+            Button trailer = (Button) activity.findViewById(R.id.trailer_button);
             //trailer.setText(R.string.trailer_title); //Changed to hardcoded button text in XML layout. Which is a better design pattern?
         } catch (JSONException e) {
             e.printStackTrace();
-            startActivity(errorIntent);
         }
     }
 
@@ -96,9 +89,7 @@ public class DetailsFragment extends AppCompatActivity {
                 .contains(Integer.toString(movie.getInt(getString(R.string.id_key))));
     }
 
-    public void launchTrailer(View view) {
-        new launchTrailerTask().execute();
-    }
+
 
     @Override
     public void onSaveInstanceState(Bundle savedInstanceState) {
@@ -116,7 +107,6 @@ public class DetailsFragment extends AppCompatActivity {
         ToggleButton button = (ToggleButton) view;
         String id = Integer.toString(movie.getInt(getString(R.string.id_key)));
         String favorite_key = getString(R.string.key_favorites);
-        SharedPreferences settings = getSharedPreferences(getString(R.string.preferences), MODE_PRIVATE);
         Set<String> oldFavorites = settings.getStringSet(favorite_key, Collections.EMPTY_SET);
         Set<String> newFavorites = new HashSet<String>(oldFavorites);
 
@@ -132,10 +122,39 @@ public class DetailsFragment extends AppCompatActivity {
                 .apply();
     }
 
-    public void viewReviews(View view) {
-        Intent intent = new Intent(getApplicationContext(), DetailsFragment.class);
+    public void launchTrailer() {
+        new launchTrailerTask().execute();
+    }
+
+    public void viewReviews() {
+        Intent intent = new Intent(context, DetailsFragment.class);
         intent.putExtra(getString(R.string.key_movie), movie.toString());
         startActivity(intent);
+    }
+
+    @Override
+    public void onClick(View view) {
+        int id = view.getId();
+
+        if (id == R.id.favorite_button) {
+            try {
+                onToggleFavorite(view);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+
+        if (id == R.id.reviews_button) {
+            viewReviews();
+        }
+
+        if (id == R.id.trailer_button) {
+            launchTrailer();
+        }
+    }
+
+    public interface DetailsListener {
+        void onViewReviews(JSONObject movie);
     }
 
     private class launchTrailerTask extends AsyncTask<Void, Void, Intent> {
@@ -147,7 +166,7 @@ public class DetailsFragment extends AppCompatActivity {
                 URL url = new URL(Uri.parse(getString(R.string.tmdb_movie_path)).buildUpon()
                         .appendPath(movie.getString("id"))
                         .appendPath("videos")
-                        .appendQueryParameter(getString(R.string.api_key_query), getApplicationContext().getString(R.string.api_key))
+                        .appendQueryParameter(getString(R.string.api_key_query), context.getString(R.string.api_key))
                         .build().toString());
 
                 String videoKey = Utils.readFromUrl(url)
@@ -176,38 +195,10 @@ public class DetailsFragment extends AppCompatActivity {
 
         protected void onPostExecute(Intent intent) {
             if (intent != null) {
-                if (intent.resolveActivity(getPackageManager()) != null) {
+                if (intent.resolveActivity(context.getPackageManager()) != null) {
                     startActivity(intent);
                 }
             }
-        }
-
-        public void onToggleButton(View view) throws JSONException {
-
-            ToggleButton button = (ToggleButton) view;
-            String id = Integer.toString(movie.getInt(getString(R.string.id_key)));
-            String favorite_key = getString(R.string.key_favorites);
-            SharedPreferences settings = getSharedPreferences(getString(R.string.preferences), MODE_PRIVATE);
-            Set<String> oldFavorites = settings.getStringSet(favorite_key, Collections.EMPTY_SET);
-            Set<String> newFavorites = new HashSet<String>(oldFavorites);
-
-        /* If the button is checked, make sure this movie is in the favorites set.
-           Otherwise, make sure it isn't. */
-            if (button.isChecked()) {
-                newFavorites.add(id);
-            } else {
-                newFavorites.remove(id);
-            }
-            settings.edit()
-                    .remove(favorite_key)
-                    .putStringSet(favorite_key, newFavorites)
-                    .apply();
-        }
-
-        public void viewReviews(View view) {
-            Intent intent = new Intent(getApplicationContext(), ReviewsFragment.class);
-            intent.putExtra(getString(R.string.key_movie), movie.toString());
-            startActivity(intent);
         }
     }
 }

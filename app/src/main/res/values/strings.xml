@@ -23,4 +23,8 @@
     <string name="no_movie">No movie found. Returning to movie discovery.</string>
     <string name="key_title">original_title</string>
     <string name="key_overview">overview</string>
+    <string name="title_movie_list">Movies</string>
+    <string name="title_movie_detail">Movie Detail</string>
+    <string name="watch_trailer">Watch Trailer</string>
+    <string name="view_reviews">View Reviews</string>
 </resources>

@@ -1,16 +1,15 @@
 package io.github.jlillioja.project1;
 
+import android.app.Activity;
+import android.app.Fragment;
 import android.content.Context;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
-import android.view.Menu;
-import android.view.MenuItem;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.GridView;
 
@@ -28,50 +27,44 @@ import java.util.List;
 import java.util.Set;
 
 
-public class DiscoverFragment extends AppCompatActivity {
-
-
+public class DiscoverFragment extends Fragment implements AdapterView.OnItemClickListener {
 
     private final static String LOG_TAG = DiscoverFragment.class.getSimpleName();
     protected List<JSONObject> moviesList;
 
     protected ImageAdapter mAdapter;
+    Activity activity;
+
     Context context;
     SharedPreferences settings;
+    OnMovieClickListener callback;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater, ViewGroup parent, Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        context = getApplicationContext();
-        settings = getSharedPreferences(getString(R.string.preferences), MODE_PRIVATE);
 
+        activity = getActivity();
+        context = activity.getApplicationContext();
+        settings = activity.getSharedPreferences(getString(R.string.preferences), Context.MODE_PRIVATE);
+        try {
+            callback = (OnMovieClickListener) getActivity();
+        } catch (ClassCastException e) {
+            throw new ClassCastException(activity.toString());
+        }
 
-        setContentView(R.layout.fragment_main);
-        settings = getSharedPreferences(getString(R.string.preferences), MODE_PRIVATE);
+        return inflater.inflate(R.layout.fragment_discover, parent);
+    }
 
+    public void onViewCreated(View view, Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        populateMovies();
+        GridView gridView = (GridView) view.findViewById(R.id.gridView);
+        gridView.setOnItemClickListener(this);
+    }
 
-        GridView gridView = (GridView) findViewById(R.id.gridView);
-        gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Intent intent = new Intent(getApplicationContext(), DetailsFragment.class);
-                /*Convert movie whose click is registered to string in the intent. Could consider parcelable.*/
-                intent.putExtra(getString(R.string.key_movie), moviesList.get(position).toString());
-                startActivity(intent);
-            }
-        });
-
-        if (savedInstanceState != null) {
-            List<String> savedMoviesStringList;
-            /* If we can get a movie list from a savedInstanceState, use that one instead. */
-            if ((savedMoviesStringList = savedInstanceState.getStringArrayList(getString(R.string.key_moviesList))) != null) {
-                try {
-                    moviesList = Utils.toJSONList(savedMoviesStringList);
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-            } else new populateMoviesTask().execute();
-        } else new populateMoviesTask().execute();
+    @Override
+    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+        callback.onMovieClick(moviesList.get(position));
     }
 
     public void onSaveInstanceState(Bundle savedInstanceState) {
@@ -82,60 +75,26 @@ public class DiscoverFragment extends AppCompatActivity {
         super.onSaveInstanceState(savedInstanceState);
     }
 
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.main, menu);
-        return true;
+    protected void populateMovies() {
+        new populateMoviesTask().execute();
     }
 
-    public boolean onOptionsItemSelected(MenuItem item) {
-        int id = item.getItemId();
-
-        if (id == R.id.refresh) {
-            new populateMoviesTask().execute();
-            return true;
-        }
-
-        if (id == R.id.popularity_sort) {
-            settings.edit().putString("sort", "popularity.desc").apply();
-            new populateMoviesTask().execute();
-            return true;
-        }
-
-        if (id == R.id.rating_sort) {
-            settings.edit().putString("sort", "vote_average.desc").apply();
-            new populateMoviesTask().execute();
-            return true;
-        }
-
-        if (id == R.id.favorites_view) {
-            new populateFavoritesTask().execute();
-            return true;
-        }
-
-        return super.onOptionsItemSelected(item);
+    protected void populateFavorites() {
+        new populateFavoritesTask().execute();
     }
 
-    private JSONObject fetchMovieById(String id) throws IOException, JSONException {
-        String LOG_TAG = getLocalClassName();
-
-        URL url = new URL(Uri.parse(getString(R.string.tmdb_movie_path))
-                .buildUpon()
-                .appendPath(id)
-                .appendQueryParameter(getString(R.string.api_key_query), getString(R.string.api_key))
-                .build().toString());
-
-        Log.v(LOG_TAG, url.toString());
-        return Utils.readFromUrl(url);
+    public interface OnMovieClickListener {
+        void onMovieClick(JSONObject movie);
     }
 
-    private class populateMoviesTask extends AsyncTask<Void, Void, JSONObject> {
+    protected class populateMoviesTask extends AsyncTask<Void, Void, JSONObject> {
 
         private final String LOG_TAG = populateMoviesTask.class.getSimpleName();
 
         protected JSONObject doInBackground(Void... n) {
             try {
                 URL url = new URL(Uri.parse(getString(R.string.tmdb_discover_path)).buildUpon()
-                        .appendQueryParameter(getString(R.string.api_key_query), getApplicationContext().getString(R.string.api_key))
+                        .appendQueryParameter(getString(R.string.api_key_query), context.getString(R.string.api_key))
                         .appendQueryParameter(getString(R.string.sort_query), settings.getString("sort", "popularity.desc"))
                         .build().toString());
 
@@ -164,7 +123,7 @@ public class DiscoverFragment extends AppCompatActivity {
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
-                GridView gridView = (GridView) findViewById(R.id.gridView);
+                GridView gridView = (GridView) activity.findViewById(R.id.gridView);
                 mAdapter = new ImageAdapter(context, R.layout.grid_item, moviesList);
                 gridView.setAdapter(mAdapter);
             }
@@ -172,7 +131,7 @@ public class DiscoverFragment extends AppCompatActivity {
 
     }
 
-    private class populateFavoritesTask extends AsyncTask<Void, Void, List<JSONObject>> {
+    protected class populateFavoritesTask extends AsyncTask<Void, Void, List<JSONObject>> {
 
         @Override
         protected List<JSONObject> doInBackground(Void... params) {
@@ -187,7 +146,7 @@ public class DiscoverFragment extends AppCompatActivity {
             List<JSONObject> favorites = new ArrayList<>();
             try {
                 while (idIterator.hasNext()) {
-                    favorites.add(fetchMovieById(idIterator.next()));
+                    favorites.add(Utils.fetchMovieById(idIterator.next(), context));
                 }
                 return favorites;
             } catch (JSONException e) {
@@ -201,11 +160,9 @@ public class DiscoverFragment extends AppCompatActivity {
 
         protected void onPostExecute(List<JSONObject> result) {
             moviesList = result;
-            GridView gridView = (GridView) findViewById(R.id.gridView);
+            GridView gridView = (GridView) activity.findViewById(R.id.gridView);
             mAdapter = new ImageAdapter(context, R.layout.grid_item, moviesList);
             gridView.setAdapter(mAdapter);
         }
     }
-
-
 }
