@@ -1,11 +1,11 @@
 package io.github.jlillioja.project1;
 
 import android.app.Activity;
-import android.app.Fragment;
 import android.content.Context;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -36,7 +36,7 @@ public class ReviewsFragment extends Fragment {
         String movieString = this.getArguments().getString(context.getString(R.string.key_movie));
         try {
             movie = new JSONObject(movieString);
-            return inflater.inflate(R.layout.fragment_movie_reviews, parent);
+            return inflater.inflate(R.layout.fragment_movie_reviews, parent, false);
         } catch (JSONException e) {
             e.printStackTrace();
             return null;

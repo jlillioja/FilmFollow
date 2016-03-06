@@ -1,17 +1,21 @@
 package io.github.jlillioja.project1;
 
-import android.app.Fragment;
-import android.app.FragmentManager;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 
 import org.json.JSONObject;
 
 public class MainActivity extends AppCompatActivity
         implements DiscoverFragment.OnMovieClickListener, DetailsFragment.DetailsListener {
+
+    final String LOG_TAG = "MainActivity";
 
     Boolean tablet;
     FragmentManager fragmentManager;
@@ -24,13 +28,16 @@ public class MainActivity extends AppCompatActivity
         settings = getSharedPreferences(getString(R.string.preferences), MODE_PRIVATE);
 
         /* We're in tablet view */
-        tablet = findViewById(R.id.detail_fragment) != null;
+        View masterFragment = findViewById(R.id.master_fragment);
+        View detailFragment = findViewById(R.id.detail_fragment);
+        tablet = (detailFragment != null);
+        Log.d(LOG_TAG, tablet.toString());
 
-        fragmentManager = getFragmentManager();
+        fragmentManager = getSupportFragmentManager();
         Fragment discoverFragment = new DiscoverFragment();
 
         fragmentManager.beginTransaction()
-                .add(R.id.master_fragment, discoverFragment)
+                .add(R.id.master_fragment, discoverFragment, getString(R.string.fragment_discover))
                 .commit();
     }
 
@@ -41,7 +48,7 @@ public class MainActivity extends AppCompatActivity
 
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
-        DiscoverFragment discover = (DiscoverFragment) fragmentManager.findFragmentById(R.id.fragment_discover);
+        DiscoverFragment discover = (DiscoverFragment) fragmentManager.findFragmentByTag(getString(R.string.fragment_discover));
         Boolean discoverIsPresent = false;
         if (discover != null) {
             discoverIsPresent = true;
@@ -66,6 +73,14 @@ public class MainActivity extends AppCompatActivity
 
         if (id == R.id.favorites_view) {
             if (discoverIsPresent) discover.populateFavorites();
+            else {
+                DiscoverFragment discoverFragment = new DiscoverFragment();
+                fragmentManager.beginTransaction()
+                        .replace(R.id.master_fragment, discoverFragment)
+                        .addToBackStack("Navigate to Favorites")
+                        .commit();
+                discoverFragment.populateFavorites();
+            }
             return true;
         }
 
@@ -82,28 +97,32 @@ public class MainActivity extends AppCompatActivity
         detailFragment.setArguments(movieArgument);
         if (tablet) {
             fragmentManager.beginTransaction()
-                    .replace(R.id.detail_fragment, detailFragment)
+                    .replace(R.id.detail_fragment, detailFragment, getString(R.string.fragment_detail))
+                    .addToBackStack("New Movie Click (tablet)")
                     .commit();
         } else {
             fragmentManager.beginTransaction()
-                    .replace(R.id.master_fragment, detailFragment)
+                    .replace(R.id.master_fragment, detailFragment, getString(R.string.fragment_detail))
+                    .addToBackStack("New Movie Click (phone)")
                     .commit();
         }
     }
 
     @Override
-    public void onViewReviews(JSONObject movie) {
+    public void viewReviews(JSONObject movie) {
         ReviewsFragment reviewsFragment = new ReviewsFragment();
         Bundle movieArgument = new Bundle();
         movieArgument.putString(getString(R.string.key_movie), movie.toString());
         reviewsFragment.setArguments(movieArgument);
         if (tablet) {
             fragmentManager.beginTransaction()
-                    .replace(R.id.detail_fragment, reviewsFragment)
+                    .replace(R.id.detail_fragment, reviewsFragment, getString(R.string.fragment_reviews))
+                    .addToBackStack("View Reviews")
                     .commit();
         } else {
             fragmentManager.beginTransaction()
-                    .replace(R.id.master_fragment, reviewsFragment)
+                    .replace(R.id.master_fragment, reviewsFragment, getString(R.string.fragment_reviews))
+                    .addToBackStack("View Reviews")
                     .commit();
         }
     }

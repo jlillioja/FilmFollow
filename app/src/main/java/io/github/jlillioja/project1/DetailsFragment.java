@@ -1,13 +1,13 @@
 package io.github.jlillioja.project1;
 
 import android.app.Activity;
-import android.app.Fragment;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -49,20 +49,22 @@ public class DetailsFragment extends Fragment implements View.OnClickListener {
         }
         try {
             movie = new JSONObject(movieString);
-            return inflater.inflate(R.layout.fragment_movie_details, parent);
+            return inflater.inflate(R.layout.fragment_movie_details, parent, false);
         } catch (JSONException e) {
             e.printStackTrace();
             return null;
         }
     }
 
-    public void onViewCreated(View view, Bundle savedInstanceState) {
+    public void onActivityCreated(Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
         try {
             ImageView image = (ImageView) activity.findViewById(R.id.poster_imageView);
             Utils.loadImage(image, movie, context);
 
             ToggleButton favorite = (ToggleButton) activity.findViewById(R.id.favorite_button);
             if (isFavorite(movie)) favorite.setChecked(true); /* Set off by default */
+            favorite.setOnClickListener(this);
 
             TextView title = (TextView) activity.findViewById(R.id.title_textView);
             title.setText(movie.getString(getString(R.string.key_title)));
@@ -78,6 +80,10 @@ public class DetailsFragment extends Fragment implements View.OnClickListener {
 
             Button trailer = (Button) activity.findViewById(R.id.trailer_button);
             //trailer.setText(R.string.trailer_title); //Changed to hardcoded button text in XML layout. Which is a better design pattern?
+            trailer.setOnClickListener(this);
+
+            Button reviews = (Button) activity.findViewById(R.id.reviews_button);
+            reviews.setOnClickListener(this);
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -126,12 +132,6 @@ public class DetailsFragment extends Fragment implements View.OnClickListener {
         new launchTrailerTask().execute();
     }
 
-    public void viewReviews() {
-        Intent intent = new Intent(context, DetailsFragment.class);
-        intent.putExtra(getString(R.string.key_movie), movie.toString());
-        startActivity(intent);
-    }
-
     @Override
     public void onClick(View view) {
         int id = view.getId();
@@ -145,7 +145,7 @@ public class DetailsFragment extends Fragment implements View.OnClickListener {
         }
 
         if (id == R.id.reviews_button) {
-            viewReviews();
+            callback.viewReviews(movie);
         }
 
         if (id == R.id.trailer_button) {
@@ -154,7 +154,7 @@ public class DetailsFragment extends Fragment implements View.OnClickListener {
     }
 
     public interface DetailsListener {
-        void onViewReviews(JSONObject movie);
+        void viewReviews(JSONObject movie);
     }
 
     private class launchTrailerTask extends AsyncTask<Void, Void, Intent> {

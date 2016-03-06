@@ -27,4 +27,7 @@
     <string name="title_movie_detail">Movie Detail</string>
     <string name="watch_trailer">Watch Trailer</string>
     <string name="view_reviews">View Reviews</string>
+    <string name="fragment_discover">fragment_discover</string>
+    <string name="fragment_detail">fragment_detail</string>
+    <string name="fragment_reviews">fragment_reviews</string>
 </resources>

@@ -1,12 +1,12 @@
 package io.github.jlillioja.project1;
 
 import android.app.Activity;
-import android.app.Fragment;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -41,8 +41,13 @@ public class DiscoverFragment extends Fragment implements AdapterView.OnItemClic
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup parent, Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+        super.onCreateView(inflater, parent, savedInstanceState);
+        View view = inflater.inflate(R.layout.fragment_discover, parent, false);
+        return view;
+    }
 
+    public void onActivityCreated(Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
         activity = getActivity();
         context = activity.getApplicationContext();
         settings = activity.getSharedPreferences(getString(R.string.preferences), Context.MODE_PRIVATE);
@@ -51,15 +56,13 @@ public class DiscoverFragment extends Fragment implements AdapterView.OnItemClic
         } catch (ClassCastException e) {
             throw new ClassCastException(activity.toString());
         }
-
-        return inflater.inflate(R.layout.fragment_discover, parent);
+        GridView gridView = (GridView) activity.findViewById(R.id.gridView);
+        gridView.setOnItemClickListener(this);
+        populateMovies();
     }
 
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        populateMovies();
-        GridView gridView = (GridView) view.findViewById(R.id.gridView);
-        gridView.setOnItemClickListener(this);
     }
 
     @Override
@@ -128,7 +131,6 @@ public class DiscoverFragment extends Fragment implements AdapterView.OnItemClic
                 gridView.setAdapter(mAdapter);
             }
         }
-
     }
 
     protected class populateFavoritesTask extends AsyncTask<Void, Void, List<JSONObject>> {
