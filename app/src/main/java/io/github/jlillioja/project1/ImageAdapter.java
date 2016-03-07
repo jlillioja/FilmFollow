@@ -19,10 +19,10 @@ import java.util.List;
  */
 public class ImageAdapter extends BaseAdapter {
 
-    private final String LOG_TAG = ImageAdapter.class.getSimpleName();
-    int layoutResourceID;
     private Context context;
     private List<JSONObject> movies = null;
+    int layoutResourceID;
+    private final String LOG_TAG = ImageAdapter.class.getSimpleName();
 
 
     public ImageAdapter(Context context, int layoutResourceID, List<JSONObject> movies) {
