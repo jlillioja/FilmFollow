@@ -24,11 +24,14 @@ public class MainActivity extends AppCompatActivity
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+
+        setContentView(R.layout.main);
         settings = getSharedPreferences(getString(R.string.preferences), MODE_PRIVATE);
 
         /* We're in tablet view */
         View masterFragment = findViewById(R.id.master_fragment);
+        String tag = masterFragment.getTag().toString();
+        Log.d(LOG_TAG, tag);
         View detailFragment = findViewById(R.id.detail_fragment);
         tablet = (detailFragment != null);
         Log.d(LOG_TAG, tablet.toString());
