@@ -42,8 +42,7 @@ public class DiscoverFragment extends Fragment implements AdapterView.OnItemClic
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup parent, Bundle savedInstanceState) {
         super.onCreateView(inflater, parent, savedInstanceState);
-        View view = inflater.inflate(R.layout.fragment_discover, parent, false);
-        return view;
+        return inflater.inflate(R.layout.fragment_discover, parent, false);
     }
 
     public void onActivityCreated(Bundle savedInstanceState) {

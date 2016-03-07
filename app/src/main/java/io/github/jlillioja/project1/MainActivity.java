@@ -5,7 +5,6 @@ import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -30,11 +29,8 @@ public class MainActivity extends AppCompatActivity
 
         /* We're in tablet view */
         View masterFragment = findViewById(R.id.master_fragment);
-        String tag = masterFragment.getTag().toString();
-        Log.d(LOG_TAG, tag);
         View detailFragment = findViewById(R.id.detail_fragment);
         tablet = (detailFragment != null);
-        Log.d(LOG_TAG, tablet.toString());
 
         fragmentManager = getSupportFragmentManager();
         Fragment discoverFragment = new DiscoverFragment();
