@@ -30,4 +30,6 @@
     <string name="fragment_discover">fragment_discover</string>
     <string name="fragment_detail">fragment_detail</string>
     <string name="fragment_reviews">fragment_reviews</string>
+    <string name="key_popularity.desc">popularity.desc</string>
+    <string name="key_vote_average.desc">vote_average.desc</string>
 </resources>

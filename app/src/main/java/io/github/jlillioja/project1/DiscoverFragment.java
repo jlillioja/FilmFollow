@@ -82,7 +82,7 @@ public class DiscoverFragment extends Fragment implements AdapterView.OnItemClic
     }
 
     protected void populateFavorites() {
-        new populateFavoritesTask().execute();
+        new PopulateFavoritesTask().execute();
     }
 
     public interface OnMovieClickListener {
@@ -132,7 +132,7 @@ public class DiscoverFragment extends Fragment implements AdapterView.OnItemClic
         }
     }
 
-    protected class populateFavoritesTask extends AsyncTask<Void, Void, List<JSONObject>> {
+    protected class PopulateFavoritesTask extends AsyncTask<Void, Void, List<JSONObject>> {
 
         @Override
         protected List<JSONObject> doInBackground(Void... params) {

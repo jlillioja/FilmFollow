@@ -1,6 +1,5 @@
 package io.github.jlillioja.project1;
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -26,30 +25,49 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
+import butterknife.ButterKnife;
+import butterknife.InjectView;
+
 public class DetailsFragment extends Fragment implements View.OnClickListener {
 
     private final static String LOG_TAG = DetailsFragment.class.getSimpleName();
-    Activity activity;
     SharedPreferences settings;
     DetailsListener callback;
+    @InjectView(R.id.favorite_button)
+    ToggleButton favorite;
+    @InjectView(R.id.poster_imageView)
+    ImageView image;
+    @InjectView(R.id.title_textView)
+    TextView title;
+    @InjectView(R.id.overview_textView)
+    TextView overview;
+    @InjectView(R.id.release_textView)
+    TextView release;
+    @InjectView(R.id.rating_textView)
+    TextView rating;
+    @InjectView(R.id.trailer_button)
+    Button trailer;
+    @InjectView(R.id.reviews_button)
+    Button reviews;
     private Context context;
     private JSONObject movie;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup parent, Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        activity = getActivity();
-        context = activity.getApplicationContext();
-        settings = activity.getSharedPreferences(getString(R.string.preferences), Context.MODE_PRIVATE);
+        context = getActivity().getApplicationContext();
+        settings = getActivity().getSharedPreferences(getString(R.string.preferences), Context.MODE_PRIVATE);
         String movieString = this.getArguments().getString(context.getString(R.string.key_movie));
         try {
             callback = (DetailsListener) getActivity();
         } catch (ClassCastException e) {
-            throw new ClassCastException(activity.toString());
+            throw new ClassCastException(getActivity().toString());
         }
         try {
             movie = new JSONObject(movieString);
-            return inflater.inflate(R.layout.fragment_movie_details, parent, false);
+            View view = inflater.inflate(R.layout.fragment_movie_details, parent, false);
+            ButterKnife.inject(this, view);
+            return view;
         } catch (JSONException e) {
             e.printStackTrace();
             return null;
@@ -59,30 +77,16 @@ public class DetailsFragment extends Fragment implements View.OnClickListener {
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
         try {
-            ImageView image = (ImageView) activity.findViewById(R.id.poster_imageView);
             Utils.loadImage(image, movie, context);
-
-            ToggleButton favorite = (ToggleButton) activity.findViewById(R.id.favorite_button);
-            if (isFavorite(movie)) favorite.setChecked(true); /* Set off by default */
+            if (isFavorite(movie)) {
+                favorite.setChecked(true);
+            } /* Set off by default */
             favorite.setOnClickListener(this);
-
-            TextView title = (TextView) activity.findViewById(R.id.title_textView);
             title.setText(movie.getString(getString(R.string.key_title)));
-
-            TextView overview = (TextView) activity.findViewById(R.id.overview_textView);
             overview.setText(movie.getString(getString(R.string.key_overview)));
-
-            TextView release = (TextView) activity.findViewById(R.id.release_textView);
             release.setText(getString(R.string.release_date_title) + movie.getString("release_date"));
-
-            TextView rating = (TextView) activity.findViewById(R.id.rating_textView);
             rating.setText(getString(R.string.rating_title) + movie.getString("vote_average"));
-
-            Button trailer = (Button) activity.findViewById(R.id.trailer_button);
-            //trailer.setText(R.string.trailer_title); //Changed to hardcoded button text in XML layout. Which is a better design pattern?
             trailer.setOnClickListener(this);
-
-            Button reviews = (Button) activity.findViewById(R.id.reviews_button);
             reviews.setOnClickListener(this);
         } catch (JSONException e) {
             e.printStackTrace();
@@ -129,7 +133,7 @@ public class DetailsFragment extends Fragment implements View.OnClickListener {
     }
 
     public void launchTrailer() {
-        new launchTrailerTask().execute();
+        new LaunchTrailerTask().execute();
     }
 
     @Override
@@ -157,8 +161,8 @@ public class DetailsFragment extends Fragment implements View.OnClickListener {
         void viewReviews(JSONObject movie);
     }
 
-    private class launchTrailerTask extends AsyncTask<Void, Void, Intent> {
-        private final String LOG_TAG = launchTrailerTask.class.getSimpleName();
+    private class LaunchTrailerTask extends AsyncTask<Void, Void, Intent> {
+        private final String LOG_TAG = LaunchTrailerTask.class.getSimpleName();
 
         @Override
         protected Intent doInBackground(Void... params) {

@@ -2,6 +2,9 @@ package io.github.jlillioja.project1;
 
 import android.content.Context;
 import android.net.Uri;
+import android.os.Bundle;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
 import android.util.Log;
 import android.widget.ImageView;
 
@@ -83,5 +86,22 @@ public class Utils {
                 .appendQueryParameter(context.getString(R.string.api_key_query), context.getString(R.string.api_key))
                 .build().toString());
         return readFromUrl(url);
+    }
+
+    public static void detailFragmentSwap(Fragment fragment, FragmentManager manager, JSONObject movie, Boolean isTablet, String backStackString) {
+        Bundle movieArgument = new Bundle();
+        movieArgument.putString("movie", movie.toString());
+        fragment.setArguments(movieArgument);
+        if (isTablet) {
+            manager.beginTransaction()
+                    .replace(R.id.detail_fragment, fragment)
+                    .addToBackStack(backStackString)
+                    .commit();
+        } else {
+            manager.beginTransaction()
+                    .replace(R.id.master_fragment, fragment)
+                    .addToBackStack(backStackString)
+                    .commit();
+        }
     }
 }
